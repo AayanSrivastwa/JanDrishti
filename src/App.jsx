@@ -7,6 +7,7 @@ import {
 
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
+import LandingPage from "./pages/LandingPage";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -28,7 +29,7 @@ function ProtectedRoute({ children }) {
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/" element={<LandingPage />} />
 
       <Route path="/register" element={<Register />} />
 
@@ -42,6 +43,9 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
+      {/* Catch-all redirect to landing */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
