@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
@@ -10,6 +10,10 @@ import {
   Navigation,
   ThumbsUp,
   MapPin,
+  Maximize2,
+  Minimize2,
+  Crosshair,
+  Layers,
 } from "lucide-react";
 
 // Fix default marker icon issues in Leaflet with Vite
@@ -73,26 +77,147 @@ function createCivicMarkerIcon(status, category, isSelected = false) {
   });
 }
 
-// Map center & zoom animation controller
-function MapController({ center, zoom }) {
+// Map center & zoom animation controller with ResizeObserver & size invalidation
+function MapController({ center, zoom, viewMode, isFullscreen }) {
   const map = useMap();
   const prevCenterRef = useRef(null);
 
   useEffect(() => {
+    // Invalidate size immediately and on subsequent frames to catch CSS transitions
     map.invalidateSize();
-  }, [map]);
+    const t1 = setTimeout(() => map.invalidateSize(), 60);
+    const t2 = setTimeout(() => map.invalidateSize(), 200);
+    const t3 = setTimeout(() => map.invalidateSize(), 500);
+
+    const container = map.getContainer();
+    if (!container) return;
+
+    let resizeObserver = null;
+    if (typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(() => {
+        map.invalidateSize();
+      });
+      resizeObserver.observe(container);
+    }
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      if (resizeObserver) resizeObserver.disconnect();
+    };
+  }, [map, viewMode, isFullscreen]);
 
   useEffect(() => {
-    if (center && (!prevCenterRef.current || prevCenterRef.current[0] !== center[0] || prevCenterRef.current[1] !== center[1])) {
-      prevCenterRef.current = center;
-      map.flyTo(center, zoom || 13, {
-        duration: 1.2,
-        easeLinearity: 0.25,
-      });
+    if (center) {
+      const changed =
+        !prevCenterRef.current ||
+        prevCenterRef.current[0] !== center[0] ||
+        prevCenterRef.current[1] !== center[1] ||
+        prevCenterRef.current[2] !== (zoom || 13);
+      if (changed) {
+        prevCenterRef.current = [center[0], center[1], zoom || 13];
+        map.flyTo(center, zoom || 13, {
+          duration: 1.0,
+          easeLinearity: 0.25,
+        });
+      }
     }
   }, [center, zoom, map]);
 
   return null;
+}
+
+// Map Controls & Floating Toolbar
+function MapToolbar({ issues, userLocation, onLocateMe, isFullscreen, onToggleFullscreen }) {
+  const map = useMap();
+  const barRef = useRef(null);
+
+  useEffect(() => {
+    if (barRef.current) {
+      L.DomEvent.disableClickPropagation(barRef.current);
+      L.DomEvent.disableScrollPropagation(barRef.current);
+    }
+  }, []);
+
+  const handleFitAll = () => {
+    if (issues && issues.length > 0) {
+      const bounds = L.latLngBounds(issues.map((i) => [i.latitude, i.longitude]));
+      if (userLocation) bounds.extend(userLocation);
+      map.fitBounds(bounds, { padding: [45, 45], maxZoom: 14 });
+    } else {
+      map.flyTo([28.6139, 77.2090], 12);
+    }
+  };
+
+  const handleCenterDelhi = () => {
+    map.flyTo([28.6139, 77.2090], 12, { duration: 0.8 });
+  };
+
+  return (
+    <div className="map-floating-bar" ref={barRef}>
+      <div className="map-controls-group">
+        <button
+          type="button"
+          className="map-control-btn"
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={onLocateMe}
+          title="Center on my GPS coordinates"
+        >
+          <Navigation size={13} />
+          <span>My GPS</span>
+        </button>
+
+        <button
+          type="button"
+          className="map-control-btn"
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={handleFitAll}
+          title="Zoom to fit all active civic reports"
+        >
+          <Layers size={13} />
+          <span>Fit All Wards ({issues.length})</span>
+        </button>
+
+        <button
+          type="button"
+          className="map-control-btn"
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={handleCenterDelhi}
+          title="Reset map to central Delhi"
+        >
+          <Crosshair size={13} />
+          <span>Center Delhi</span>
+        </button>
+
+        <button
+          type="button"
+          className="map-control-btn btn-fullscreen-toggle"
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={onToggleFullscreen}
+          title={isFullscreen ? "Exit Fullscreen" : "Fill Complete Screen"}
+        >
+          {isFullscreen ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
+          <span>{isFullscreen ? "Exit Full" : "Fill Screen"}</span>
+        </button>
+      </div>
+
+      <div className="map-legend-pills">
+        <span className="legend-chip review">
+          <span className="chip-dot red" /> Under Review
+        </span>
+        <span className="legend-chip progress">
+          <span className="chip-dot amber" /> In Progress
+        </span>
+        <span className="legend-chip verification">
+          <span className="chip-dot purple" /> Needs Verification
+        </span>
+        <span className="legend-chip resolved">
+          <span className="chip-dot green" /> Verified
+        </span>
+      </div>
+    </div>
+  );
 }
 
 // Click listener to pick GPS coordinates
@@ -119,14 +244,17 @@ export default function CivicMap({
   onLocateMe,
   center = [28.6139, 77.2090], // Delhi Center (Connaught Place)
   zoom = 12,
+  viewMode = "split",
 }) {
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
   const mapCenter = selectedIssue
     ? [selectedIssue.latitude, selectedIssue.longitude]
     : userLocation || center;
 
   // OpenStreetMap for Light, CartoDB Dark Matter for Dark
   const tileUrl = darkMode
-    ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+    ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
     : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
 
   const tileAttribution = darkMode
@@ -134,49 +262,41 @@ export default function CivicMap({
     : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
   return (
-    <div className={`civic-map-wrapper ${darkMode ? "dark-tiles" : ""}`}>
-      {/* Floating map top bar */}
-      <div className="map-floating-bar">
-        <button
-          type="button"
-          className="map-control-btn"
-          onClick={onLocateMe}
-          title="Center on my GPS coordinates"
-        >
-          <Navigation size={14} />
-          <span>My GPS</span>
-        </button>
-
-        <div className="map-legend-pills">
-          <span className="legend-chip review">
-            <span className="chip-dot red" /> Under Review
-          </span>
-          <span className="legend-chip progress">
-            <span className="chip-dot amber" /> In Progress
-          </span>
-          <span className="legend-chip verification">
-            <span className="chip-dot purple" /> Needs Verification
-          </span>
-          <span className="legend-chip resolved">
-            <span className="chip-dot green" /> Verified
-          </span>
-        </div>
-      </div>
-
+    <div
+      className={`civic-map-wrapper ${darkMode ? "dark-tiles" : ""} ${
+        isFullscreen ? "fullscreen-mode" : ""
+      }`}
+    >
       <MapContainer
         center={mapCenter}
         zoom={zoom}
         scrollWheelZoom={true}
         style={{ width: "100%", height: "100%", borderRadius: "inherit" }}
       >
+        <MapToolbar
+          issues={issues}
+          userLocation={userLocation}
+          onLocateMe={onLocateMe}
+          isFullscreen={isFullscreen}
+          onToggleFullscreen={() => setIsFullscreen(!isFullscreen)}
+        />
+
         <MapController
           center={mapCenter}
           zoom={selectedIssue ? 14 : zoom}
+          viewMode={viewMode}
+          isFullscreen={isFullscreen}
         />
 
         <MapClickPicker onMapClick={onMapClick} />
 
-        <TileLayer attribution={tileAttribution} url={tileUrl} />
+        <TileLayer
+          key={darkMode ? "dark" : "light"}
+          attribution={tileAttribution}
+          url={tileUrl}
+          subdomains={darkMode ? "abcd" : "abc"}
+          maxZoom={19}
+        />
 
         {/* User live location marker */}
         {userLocation && (
@@ -243,6 +363,7 @@ export default function CivicMap({
                       <button
                         type="button"
                         className="popup-btn-upvote"
+                        onMouseDown={(e) => e.stopPropagation()}
                         onClick={(e) => {
                           e.stopPropagation();
                           onUpvoteIssue(issue.id);
@@ -263,14 +384,22 @@ export default function CivicMap({
                       <button
                         type="button"
                         className="popup-btn-verify"
-                        onClick={() => onVerifyIssue(issue.id, "resolved")}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onVerifyIssue(issue.id, "resolved");
+                        }}
                       >
                         <ShieldCheck size={14} /> Confirm Fixed
                       </button>
                       <button
                         type="button"
                         className="popup-btn-dispute"
-                        onClick={() => onVerifyIssue(issue.id, "progress")}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onVerifyIssue(issue.id, "progress");
+                        }}
                       >
                         <AlertTriangle size={14} /> Dispute
                       </button>

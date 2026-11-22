@@ -1,13 +1,20 @@
 /**
  * JanDrishti - Civic Issue Management Service
  * Dual-Mode Engine:
- * 1. Automatically communicates with the Node.js/Express Backend API (http://localhost:5000/api)
+ * 1. Automatically communicates with the Node.js/Express Backend API
  * 2. Seamlessly falls back to localStorage store if backend is offline or during testing
  */
 
-const BACKEND_API_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000/api";
+// In production, VITE_BACKEND_URL should be set to your deployed backend URL.
+// If not set, falls back to relative /api (works when backend & frontend are co-hosted),
+// or localhost for local development.
+const BACKEND_API_URL =
+  import.meta.env.VITE_BACKEND_URL ||
+  (import.meta.env.PROD ? "/api" : "http://localhost:5000/api");
+
 const STORAGE_KEY = "jandrishti_issues_v2";
 const ACTIVITY_KEY = "jandrishti_activity_v2";
+const COMMENTS_KEY = "jandrishti_comments_v2";
 
 export const DELHI_INITIAL_ISSUES = [
   {
@@ -57,398 +64,773 @@ export const DELHI_INITIAL_ISSUES = [
     evidenceBefore: "https://images.unsplash.com/photo-1584824486509-112e4181ff6b?w=800&auto=format&fit=crop&q=80",
     evidenceAfter: "https://images.unsplash.com/photo-1541888946425-d0fbb1861564?w=800&auto=format&fit=crop&q=80",
     resolutionProof: {
-      sealNumber: "SEAL #NDMC-DJB-4821",
-      contractor: "Delhi Jal Board Emergency Utility Div",
-      notes: "High pressure ductile sleeve clamped, pressure tested at 4.2 bar, sidewalk pavers re-laid."
+      sealNumber: "SEAL #DJB-2026-7714",
+      contractor: "Delhi Jal Board Emergency Unit",
+      notes: "High-pressure PVC sleeve installed. Pavement restored."
     },
     citizenVerified: false,
     timeline: [
-      { step: "Reported", time: "20 hrs ago", desc: "Pipeline leak flooding pavement reported." },
-      { step: "Assigned", time: "16 hrs ago", desc: "Priority dispatch to DJB Central Emergency Crew." },
-      { step: "Work Completed", time: "1 hr ago", desc: "Repair completed. Awaiting citizen physical sign-off." }
+      { step: "Reported", time: "20 hrs ago", desc: "Burst main reported with geotagged flood evidence." },
+      { step: "Emergency Response", time: "16 hrs ago", desc: "DJB deployed emergency leak unit within 4 hours." },
+      { step: "Repair Proof Submitted", time: "1 hr ago", desc: "Sleeve repair complete. Citizen verification requested." }
     ]
   },
   {
     id: "JD-2026-03",
-    title: "Flickering High-Mast Streetlight Corridor",
+    title: "Faulty Streetlight Pole #42 Dark Corridor",
     category: "Streetlighting",
-    ward: "Ward 64 - Hauz Khas",
-    status: "resolved",
+    ward: "Ward 71 - Hauz Khas",
+    status: "review",
     latitude: 28.5494,
     longitude: 77.2001,
-    description: "Discom maintenance division replaced old sodium luminaire with new energy-efficient 120W LED fixture. Verified fixed by resident welfare rep.",
-    reportedBy: "Priya Sundaram",
-    reportedAt: new Date(Date.now() - 48 * 3600 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 12 * 3600 * 1000).toISOString(),
-    priority: "Normal",
+    description: "Dark transit corridors, flickering fixtures, exposed junction wiring, and knocked-down poles.",
+    reportedBy: "Priya Singh",
+    reportedAt: new Date(Date.now() - 8 * 3600 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 8 * 3600 * 1000).toISOString(),
+    priority: "High",
     upvotes: 18,
     upvotedBy: [],
-    assignedOfficer: "Manoj Kumar, BSES Maintenance",
-    slaHours: 18,
-    evidenceBefore: "https://images.unsplash.com/photo-1509114397022-ed747cca3f65?w=800&auto=format&fit=crop&q=80",
-    evidenceAfter: "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800&auto=format&fit=crop&q=80",
-    resolutionProof: {
-      sealNumber: "SEAL #BSES-LT-902",
-      contractor: "BSES Rajdhani Streetlighting Crew",
-      notes: "New Philips 120W LED fixture installed. Photocell sensor calibrated."
-    },
-    citizenVerified: true,
+    assignedOfficer: null,
+    slaHours: 48,
+    evidenceBefore: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&auto=format&fit=crop&q=80",
+    evidenceAfter: null,
+    resolutionProof: null,
+    citizenVerified: false,
     timeline: [
-      { step: "Reported", time: "48 hrs ago", desc: "Dark transit zone reported near Hauz Khas Market." },
-      { step: "Repaired", time: "24 hrs ago", desc: "BSES electrician squad installed LED module." },
-      { step: "Citizen Verified", time: "12 hrs ago", desc: "Inspected and confirmed resolved by @priya_s." }
+      { step: "Reported", time: "8 hrs ago", desc: "Dark transit zone reported near Hauz Khas Market." }
     ]
   },
   {
     id: "JD-2026-04",
-    title: "Uncollected Garbage Accumulation near Metro Gate 3",
-    category: "Waste Management",
-    ward: "Ward 82 - Karol Bagh",
-    status: "review",
-    latitude: 28.6514,
-    longitude: 77.1907,
-    description: "Commercial cardboard and food waste overflow near market metro entrance. Field inspector dispatched for secondary collection.",
-    reportedBy: "Amitabh Sen",
-    reportedAt: new Date(Date.now() - 3 * 3600 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 3 * 3600 * 1000).toISOString(),
+    title: "Overflowing Drain & Sewage Backflow — Rohini Sector 9",
+    category: "Drainage & Sewage",
+    ward: "Ward 24 - Rohini Sector 9",
+    status: "progress",
+    latitude: 28.7297,
+    longitude: 77.1013,
+    description: "MCD drain blocked with construction debris, causing sewage overflow onto residential footpath.",
+    reportedBy: "Rahul Nair",
+    reportedAt: new Date(Date.now() - 48 * 3600 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 4 * 3600 * 1000).toISOString(),
     priority: "High",
     upvotes: 31,
     upvotedBy: [],
-    assignedOfficer: "Sanjay Gupta, MCD Sanitation Dept",
-    slaHours: 12,
-    evidenceBefore: "https://images.unsplash.com/photo-1605600659908-0ef719419d41?w=800&auto=format&fit=crop&q=80",
+    assignedOfficer: "MCD Drainage Rohini",
+    slaHours: 48,
+    evidenceBefore: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&auto=format&fit=crop&q=80",
     evidenceAfter: null,
     resolutionProof: null,
     citizenVerified: false,
     timeline: [
-      { step: "Reported", time: "3 hrs ago", desc: "Waste accumulation logged via JanDrishti Web App." },
-      { step: "Under Review", time: "1 hr ago", desc: "Automated routing to MCD Karol Bagh Sanitation Division." }
+      { step: "Reported", time: "48 hrs ago", desc: "Sewage backflow reported with photo proof." },
+      { step: "Assigned", time: "30 hrs ago", desc: "MCD Drainage Rohini Division assigned." },
+      { step: "Jetting Machine Deployed", time: "4 hrs ago", desc: "High-pressure jetting unit clearing blocked section." }
     ]
   },
   {
     id: "JD-2026-05",
-    title: "Clogged Stormwater Drain causing Street Waterlogging",
-    category: "Drainage & Sewage",
-    ward: "Ward 35 - Dwarka Sector 10",
-    status: "progress",
-    latitude: 28.5921,
-    longitude: 77.0460,
-    description: "MCD heavy desilting suction machines actively clearing stormwater concrete culvert ahead of weekend rain forecast.",
-    reportedBy: "Kavita Rao",
-    reportedAt: new Date(Date.now() - 14 * 3600 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 4 * 3600 * 1000).toISOString(),
-    priority: "Urgent",
-    upvotes: 19,
+    title: "Broken Park Bench & Unsafe Playground Equipment",
+    category: "Parks & Green Spaces",
+    ward: "Ward 55 - Defence Colony",
+    status: "resolved",
+    latitude: 28.5705,
+    longitude: 77.2300,
+    description: "Park benches with exposed metal spikes and rusted playground slides causing injury risk repaired and replaced.",
+    reportedBy: "Meena Kapoor",
+    reportedAt: new Date(Date.now() - 72 * 3600 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 12 * 3600 * 1000).toISOString(),
+    priority: "Normal",
+    upvotes: 15,
     upvotedBy: [],
-    assignedOfficer: "Harish Chander, MCD Drainage Wing",
-    slaHours: 24,
-    evidenceBefore: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&auto=format&fit=crop&q=80",
-    evidenceAfter: null,
-    resolutionProof: null,
-    citizenVerified: false,
+    assignedOfficer: "SDMC Horticulture",
+    slaHours: 72,
+    evidenceBefore: "https://images.unsplash.com/photo-1572025442646-866d16c84a54?w=800&auto=format&fit=crop&q=80",
+    evidenceAfter: "https://images.unsplash.com/photo-1575783970733-1aaedde1db74?w=800&auto=format&fit=crop&q=80",
+    resolutionProof: {
+      sealNumber: "SEAL #SDMC-2026-4421",
+      contractor: "SDMC Parks & Gardens Division",
+      notes: "Three benches replaced with galvanized steel models. All slides inspected and repainted."
+    },
+    citizenVerified: true,
     timeline: [
-      { step: "Reported", time: "14 hrs ago", desc: "Clogged drainage channel reported." },
-      { step: "Dispatched", time: "8 hrs ago", desc: "Super-sucker vacuum machine sent to site." }
+      { step: "Reported", time: "72 hrs ago", desc: "Safety hazard reported by parent." },
+      { step: "Assigned", time: "48 hrs ago", desc: "SDMC Horticulture dispatched." },
+      { step: "Repair Proof Submitted", time: "24 hrs ago", desc: "Replacement equipment installed." },
+      { step: "Citizen Verified & Closed", time: "12 hrs ago", desc: "Local parent group confirmed resolution." }
     ]
   },
   {
     id: "JD-2026-06",
-    title: "Broken Playground Swing in District Park",
-    category: "Parks & Green Spaces",
-    ward: "Ward 24 - Rohini Sector 9",
-    status: "resolved",
-    latitude: 28.7159,
-    longitude: 77.1189,
-    description: "DDA Park safety chains repaired and seat replaced. Verified fixed by Resident Welfare Association president.",
-    reportedBy: "Sandeep Bansal",
-    reportedAt: new Date(Date.now() - 72 * 3600 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
-    priority: "Normal",
-    upvotes: 14,
-    upvotedBy: [],
-    assignedOfficer: "Vikas Tyagi, DDA Horticulture & Parks",
-    slaHours: 48,
-    evidenceBefore: "https://images.unsplash.com/photo-1519331379826-f10be5486c6f?w=800&auto=format&fit=crop&q=80",
-    evidenceAfter: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&auto=format&fit=crop&q=80",
-    resolutionProof: {
-      sealNumber: "SEAL #DDA-ROHINI-402",
-      contractor: "DDA Park Equipment Division",
-      notes: "Stainless steel chains installed, rubber buffer seats mounted, anchor bolts torqued."
-    },
-    citizenVerified: true,
-    timeline: [
-      { step: "Reported", time: "3 days ago", desc: "Broken child swing reported." },
-      { step: "Repaired", time: "Yesterday", desc: "DDA team replaced hardware." },
-      { step: "Citizen Verified", time: "24 hrs ago", desc: "Signed off by RWA President Sandeep B." }
-    ]
-  }
-];
-
-export function getStoredIssues() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(DELHI_INITIAL_ISSUES));
-      return DELHI_INITIAL_ISSUES;
-    }
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : DELHI_INITIAL_ISSUES;
-  } catch (err) {
-    console.error("Error reading issues from storage:", err);
-    return DELHI_INITIAL_ISSUES;
-  }
-}
-
-export function saveStoredIssues(issues) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(issues));
-  } catch (err) {
-    console.error("Error writing issues to storage:", err);
-  }
-}
-
-// Background sync with Express Backend
-async function syncBackend(endpoint, method = "POST", body = null) {
-  try {
-    const res = await fetch(`${BACKEND_API_URL}${endpoint}`, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: body ? JSON.stringify(body) : undefined,
-    });
-    if (res.ok) {
-      return await res.json();
-    }
-  } catch {
-    // Backend offline or running in mock mode - smooth fallback
-  }
-  return null;
-}
-
-export function createNewIssue({ title, category, ward, description, priority, latitude, longitude, photoUrl, reportedBy }) {
-  const issues = getStoredIssues();
-  const newId = `JD-2026-${String(issues.length + 1).padStart(2, "0")}`;
-
-  const newIssue = {
-    id: newId,
-    title: title.trim(),
-    category: category || "Roads & Potholes",
-    ward: ward || "Ward 42 - Connaught Place (NDMC)",
+    title: "Garbage Dump & Open Waste Burning Near School",
+    category: "Waste Management",
+    ward: "Ward 36 - Saket",
     status: "review",
-    latitude: Number(latitude) || 28.6139,
-    longitude: Number(longitude) || 77.2090,
-    description: description ? description.trim() : "Reported via JanDrishti Civic Portal.",
-    reportedBy: reportedBy || "Citizen Reporter",
-    reportedAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    priority: priority || "High",
-    upvotes: 1,
-    upvotedBy: [reportedBy || "Citizen"],
-    assignedOfficer: "Assigning to Ward Engineer...",
-    slaHours: priority === "Urgent" ? 12 : priority === "High" ? 24 : 48,
-    evidenceBefore: photoUrl || null,
+    latitude: 28.5245,
+    longitude: 77.2066,
+    description: "Illegal garbage dump near school causing health hazard and open burning incidents.",
+    reportedBy: "Teacher, DPS Saket",
+    reportedAt: new Date(Date.now() - 6 * 3600 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 6 * 3600 * 1000).toISOString(),
+    priority: "Urgent",
+    upvotes: 55,
+    upvotedBy: [],
+    assignedOfficer: null,
+    slaHours: 12,
+    evidenceBefore: "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=800&auto=format&fit=crop&q=80",
     evidenceAfter: null,
     resolutionProof: null,
     citizenVerified: false,
     timeline: [
-      { step: "Reported", time: "Just now", desc: "Ticket filed with GPS coordinates and photographic geotag." }
+      { step: "Reported", time: "6 hrs ago", desc: "Open garbage dump near school gate reported with photos." }
     ]
-  };
+  }
+];
 
-  const updated = [newIssue, ...issues];
-  saveStoredIssues(updated);
+/* ============================================================================
+   INTERNAL HELPERS
+   ============================================================================ */
 
-  logActivity({
-    type: "create",
-    issueId: newId,
-    issueTitle: newIssue.title,
-    user: reportedBy || "Citizen",
-    time: "Just now"
-  });
-
-  // Async sync with backend
-  syncBackend("/issues", "POST", newIssue);
-
-  return newIssue;
-}
-
-export function updateIssueStatus(issueId, newStatus, userActor = "Citizen Inspector", disputeReason = "") {
-  const issues = getStoredIssues();
-  const updated = issues.map((item) => {
-    if (item.id === issueId) {
-      const isVerified = newStatus === "resolved";
-      const isDisputed = newStatus === "progress" && item.status === "verification";
-      
-      const newTimeline = [...item.timeline];
-      if (isVerified) {
-        newTimeline.push({
-          step: "Citizen Verified & Closed",
-          time: "Just now",
-          desc: `Confirmed resolved by ${userActor}. Official civic closure ledger recorded.`
-        });
-      } else if (isDisputed) {
-        newTimeline.push({
-          step: "Citizen Disputed & Escalated",
-          time: "Just now",
-          desc: disputeReason 
-            ? `Disputed: "${disputeReason}". Urgent escalation sent to Executive Engineer.`
-            : `Citizen disputed quality of repair. Reopened with priority escalation.`
-        });
-      }
-
-      return {
-        ...item,
-        status: newStatus,
-        citizenVerified: isVerified ? true : item.citizenVerified,
-        updatedAt: new Date().toISOString(),
-        timeline: newTimeline
-      };
-    }
-    return item;
-  });
-
-  saveStoredIssues(updated);
-
-  logActivity({
-    type: newStatus === "resolved" ? "verify" : "dispute",
-    issueId,
-    issueTitle: issues.find(i => i.id === issueId)?.title || "Civic Issue",
-    user: userActor,
-    time: "Just now"
-  });
-
-  // Async sync with backend
-  syncBackend(`/issues/${issueId}/status`, "PATCH", { status: newStatus, userActor, disputeReason });
-
-  return updated;
-}
-
-export function toggleIssueUpvote(issueId, userIdentifier = "me") {
-  const issues = getStoredIssues();
-  let hasUpvoted = false;
-
-  const updated = issues.map((item) => {
-    if (item.id === issueId) {
-      const upvotedBy = Array.isArray(item.upvotedBy) ? item.upvotedBy : [];
-      const alreadyVoted = upvotedBy.includes(userIdentifier);
-      hasUpvoted = !alreadyVoted;
-
-      return {
-        ...item,
-        upvotes: alreadyVoted ? Math.max(0, item.upvotes - 1) : item.upvotes + 1,
-        upvotedBy: alreadyVoted
-          ? upvotedBy.filter(u => u !== userIdentifier)
-          : [...upvotedBy, userIdentifier]
-      };
-    }
-    return item;
-  });
-
-  saveStoredIssues(updated);
-  syncBackend(`/issues/${issueId}/upvote`, "POST", { userIdentifier });
-  return { updated, hasUpvoted };
-}
-
-export function assignOfficerToIssue(issueId, officerName, wardDivision) {
-  const issues = getStoredIssues();
-  const updated = issues.map((item) => {
-    if (item.id === issueId) {
-      const newTimeline = [...item.timeline];
-      newTimeline.push({
-        step: "Officer Dispatched",
-        time: "Just now",
-        desc: `Assigned to ${officerName} (${wardDivision || "Field Division"}). Field team mobilized.`
-      });
-
-      return {
-        ...item,
-        assignedOfficer: officerName,
-        status: item.status === "review" ? "progress" : item.status,
-        updatedAt: new Date().toISOString(),
-        timeline: newTimeline
-      };
-    }
-    return item;
-  });
-
-  saveStoredIssues(updated);
-
-  logActivity({
-    type: "assign",
-    issueId,
-    issueTitle: issues.find(i => i.id === issueId)?.title || "Civic Issue",
-    user: officerName,
-    time: "Just now"
-  });
-
-  syncBackend(`/issues/${issueId}/assign`, "POST", { officerName, wardDivision });
-  return updated;
-}
-
-export function submitMunicipalRepairProof(issueId, { contractor, sealNumber, notes, photoUrl }) {
-  const issues = getStoredIssues();
-  const updated = issues.map((item) => {
-    if (item.id === issueId) {
-      const newTimeline = [...item.timeline];
-      newTimeline.push({
-        step: "Repair Proof Submitted",
-        time: "Just now",
-        desc: `Work claimed completed by ${contractor || "Field Team"} (${sealNumber || "Official Seal"}). Sent to citizen for verification.`
-      });
-
-      return {
-        ...item,
-        status: "verification",
-        evidenceAfter: photoUrl || "https://images.unsplash.com/photo-1541888946425-d0fbb1861564?w=800&auto=format&fit=crop&q=80",
-        resolutionProof: {
-          sealNumber: sealNumber || `SEAL #MCD-${Math.floor(1000 + Math.random() * 9000)}`,
-          contractor: contractor || "Municipal Field Unit",
-          notes: notes || "Work inspected and repaired by municipal engineering division."
-        },
-        updatedAt: new Date().toISOString(),
-        timeline: newTimeline
-      };
-    }
-    return item;
-  });
-
-  saveStoredIssues(updated);
-
-  logActivity({
-    type: "repair_claim",
-    issueId,
-    issueTitle: issues.find(i => i.id === issueId)?.title || "Civic Issue",
-    user: contractor || "Municipal Engineer",
-    time: "Just now"
-  });
-
-  syncBackend(`/issues/${issueId}/repair-proof`, "POST", { contractor, sealNumber, notes, photoUrl });
-  return updated;
-}
-
-export function resetToDefaults() {
+function getStoredIssues() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {
+    // ignore
+  }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(DELHI_INITIAL_ISSUES));
   return DELHI_INITIAL_ISSUES;
 }
 
-export function getActivities() {
+function saveIssues(issues) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(issues));
+}
+
+async function apiRequest(endpoint, options = {}) {
+  try {
+    const res = await fetch(`${BACKEND_API_URL}${endpoint}`, {
+      headers: { "Content-Type": "application/json" },
+      ...options,
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch {
+    return null; // Backend unavailable — caller falls back to localStorage
+  }
+}
+
+/* ============================================================================
+   ISSUES CRUD
+   ============================================================================ */
+
+export async function fetchIssues(filters = {}) {
+  const params = new URLSearchParams();
+  if (filters.category && filters.category !== "All Categories")
+    params.set("category", filters.category);
+  if (filters.status && filters.status !== "all")
+    params.set("status", filters.status);
+  if (filters.search) params.set("search", filters.search);
+
+  const query = params.toString();
+  const result = await apiRequest(`/issues${query ? `?${query}` : ""}`);
+  if (result?.success) return result.data;
+  return getStoredIssues();
+}
+
+export async function createIssue(issueData) {
+  const result = await apiRequest("/issues", {
+    method: "POST",
+    body: JSON.stringify(issueData),
+  });
+
+  const issues = getStoredIssues();
+
+  if (result?.success) {
+    const newIssue = result.data;
+    issues.unshift(newIssue);
+    saveIssues(issues);
+    return newIssue;
+  }
+
+  // Offline fallback
+  const newId =
+    issueData.id ||
+    `JD-${new Date().getFullYear()}-${String(issues.length + 1).padStart(2, "0")}`;
+  const newIssue = {
+    id: newId,
+    ...issueData,
+    status: "review",
+    reportedAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    upvotes: 1,
+    upvotedBy: [issueData.reportedBy || "Citizen"],
+    citizenVerified: false,
+    evidenceAfter: null,
+    resolutionProof: null,
+    timeline: [
+      {
+        step: "Reported",
+        time: "Just now",
+        desc: "Ticket filed with GPS coordinates and photographic geotag.",
+      },
+    ],
+  };
+  issues.unshift(newIssue);
+  saveIssues(issues);
+  return newIssue;
+}
+
+export async function updateIssueStatusAsync(issueId, status, options = {}) {
+  const result = await apiRequest(`/issues/${issueId}/status`, {
+    method: "PATCH",
+    body: JSON.stringify({ status, ...options }),
+  });
+
+  if (result?.success) {
+    const issues = getStoredIssues();
+    const idx = issues.findIndex((i) => i.id === issueId);
+    if (idx !== -1) {
+      issues[idx] = result.data;
+      saveIssues(issues);
+    }
+    return result.data;
+  }
+
+  const issues = getStoredIssues();
+  const idx = issues.findIndex((i) => i.id === issueId);
+  if (idx === -1) return null;
+  issues[idx] = { ...issues[idx], status, updatedAt: new Date().toISOString() };
+  saveIssues(issues);
+  return issues[idx];
+}
+
+export async function upvoteIssueAsync(issueId, userIdentifier) {
+  const result = await apiRequest(`/issues/${issueId}/upvote`, {
+    method: "POST",
+    body: JSON.stringify({ userIdentifier }),
+  });
+
+  if (result?.success) {
+    const issues = getStoredIssues();
+    const idx = issues.findIndex((i) => i.id === issueId);
+    if (idx !== -1) {
+      issues[idx] = result.data;
+      saveIssues(issues);
+    }
+    return result;
+  }
+
+  const issues = getStoredIssues();
+  const idx = issues.findIndex((i) => i.id === issueId);
+  if (idx === -1) return null;
+
+  const issue = issues[idx];
+  if (!Array.isArray(issue.upvotedBy)) issue.upvotedBy = [];
+  const alreadyUpvoted = issue.upvotedBy.includes(userIdentifier);
+  if (alreadyUpvoted) {
+    issue.upvotes = Math.max(0, issue.upvotes - 1);
+    issue.upvotedBy = issue.upvotedBy.filter((u) => u !== userIdentifier);
+  } else {
+    issue.upvotes += 1;
+    issue.upvotedBy.push(userIdentifier);
+  }
+  saveIssues(issues);
+  return { success: true, upvoted: !alreadyUpvoted, upvotes: issue.upvotes, data: issue };
+}
+
+export async function assignOfficerAsync(issueId, officerName, wardDivision) {
+  const result = await apiRequest(`/issues/${issueId}/assign`, {
+    method: "POST",
+    body: JSON.stringify({ officerName, wardDivision }),
+  });
+
+  if (result?.success) {
+    const issues = getStoredIssues();
+    const idx = issues.findIndex((i) => i.id === issueId);
+    if (idx !== -1) {
+      issues[idx] = result.data;
+      saveIssues(issues);
+    }
+    return result.data;
+  }
+
+  const issues = getStoredIssues();
+  const idx = issues.findIndex((i) => i.id === issueId);
+  if (idx === -1) return null;
+  issues[idx].assignedOfficer = officerName;
+  issues[idx].status = "progress";
+  issues[idx].updatedAt = new Date().toISOString();
+  saveIssues(issues);
+  return issues[idx];
+}
+
+export async function submitRepairProofAsync(issueId, proofData) {
+  const result = await apiRequest(`/issues/${issueId}/repair-proof`, {
+    method: "POST",
+    body: JSON.stringify(proofData),
+  });
+
+  if (result?.success) {
+    const issues = getStoredIssues();
+    const idx = issues.findIndex((i) => i.id === issueId);
+    if (idx !== -1) {
+      issues[idx] = result.data;
+      saveIssues(issues);
+    }
+    return result.data;
+  }
+
+  const issues = getStoredIssues();
+  const idx = issues.findIndex((i) => i.id === issueId);
+  if (idx === -1) return null;
+  issues[idx].status = "verification";
+  issues[idx].evidenceAfter =
+    proofData.photoUrl ||
+    "https://images.unsplash.com/photo-1541888946425-d0fbb1861564?w=800&auto=format&fit=crop&q=80";
+  issues[idx].resolutionProof = {
+    sealNumber: proofData.sealNumber || `SEAL #MCD-${Math.floor(1000 + Math.random() * 9000)}`,
+    contractor: proofData.contractor || "Municipal Field Unit",
+    notes: proofData.notes || "Work inspected and repaired.",
+  };
+  issues[idx].updatedAt = new Date().toISOString();
+  saveIssues(issues);
+  return issues[idx];
+}
+
+/* ============================================================================
+   ACTIVITIES
+   ============================================================================ */
+
+export function getStoredActivities() {
   try {
     const raw = localStorage.getItem(ACTIVITY_KEY);
-    if (!raw) return [];
-    return JSON.parse(raw);
+    if (raw) return JSON.parse(raw);
+  } catch {
+    // ignore
+  }
+  return [];
+}
+
+export function addActivity(activity) {
+  const activities = getStoredActivities();
+  const updated = [{ id: Date.now(), ...activity, time: "Just now" }, ...activities];
+  localStorage.setItem(ACTIVITY_KEY, JSON.stringify(updated));
+  return updated;
+}
+
+export async function fetchActivities() {
+  const result = await apiRequest("/activities");
+  if (result?.success) return result.data;
+  return getStoredActivities();
+}
+
+export async function fetchStats() {
+  const result = await apiRequest("/stats/summary");
+  if (result?.success) return result.data;
+  return null;
+}
+
+/* ============================================================================
+   COMMENTS SYSTEM (localStorage + backend sync)
+   ============================================================================ */
+
+export function getStoredComments(issueId) {
+  try {
+    const raw = localStorage.getItem(COMMENTS_KEY);
+    const all = raw ? JSON.parse(raw) : {};
+    return all[issueId] || [];
   } catch {
     return [];
   }
 }
 
-export function logActivity(activity) {
+export function addIssueComment(issueId, { author, authorRole, text, avatar }) {
+  const newComment = {
+    id: `cmt_${Date.now()}`,
+    issueId,
+    author: author || "Citizen",
+    authorRole: authorRole || "citizen",
+    text: text.trim(),
+    avatar: avatar || null,
+    createdAt: new Date().toISOString(),
+  };
+
   try {
-    const prev = getActivities();
-    const updated = [
-      { id: Date.now(), ...activity, timestamp: new Date().toISOString() },
-      ...prev
-    ].slice(0, 30);
-    localStorage.setItem(ACTIVITY_KEY, JSON.stringify(updated));
+    const raw = localStorage.getItem(COMMENTS_KEY);
+    const all = raw ? JSON.parse(raw) : {};
+    if (!all[issueId]) all[issueId] = [];
+    all[issueId].unshift(newComment);
+    localStorage.setItem(COMMENTS_KEY, JSON.stringify(all));
   } catch {
-    // silent
+    // ignore
   }
+
+  // Fire-and-forget to backend
+  apiRequest(`/issues/${issueId}/comments`, {
+    method: "POST",
+    body: JSON.stringify({ author, authorRole, text, avatar }),
+  });
+
+  return newComment;
+}
+
+export function deleteIssueComment(issueId, commentId, author) {
+  try {
+    const raw = localStorage.getItem(COMMENTS_KEY);
+    const all = raw ? JSON.parse(raw) : {};
+    if (!all[issueId]) return [];
+    all[issueId] = all[issueId].filter((c) => c.id !== commentId);
+    localStorage.setItem(COMMENTS_KEY, JSON.stringify(all));
+
+    apiRequest(`/issues/${issueId}/comments/${commentId}?author=${encodeURIComponent(author)}`, {
+      method: "DELETE",
+    });
+
+    return all[issueId];
+  } catch {
+    return [];
+  }
+}
+
+/* ============================================================================
+   DUPLICATE CHECK
+   ============================================================================ */
+
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const toRad = (x) => (x * Math.PI) / 180;
+  const R = 6371;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+export function findPotentialDuplicates({ category, latitude, longitude, title, description, ward, radiusKm = 1 }) {
+  const issues = getStoredIssues();
+  const lat = parseFloat(latitude);
+  const lng = parseFloat(longitude);
+  const radius = parseFloat(radiusKm);
+
+  const catLower = (category || "").toLowerCase();
+  const titleLower = (title || "").toLowerCase();
+  const descLower = (description || "").toLowerCase();
+
+  const duplicates = issues
+    .map((issue) => {
+      const dist = haversineKm(lat, lng, issue.latitude, issue.longitude);
+      if (dist > radius) return null;
+
+      let score = 0;
+      const reasons = [];
+
+      if (catLower && issue.category.toLowerCase() === catLower) {
+        score += 40;
+        reasons.push("Same category");
+      }
+
+      if (ward && issue.ward.toLowerCase().includes(ward.toLowerCase())) {
+        score += 25;
+        reasons.push("Same ward/locality");
+      }
+
+      if (dist < 0.2) score += 20;
+      else if (dist < 0.5) score += 10;
+      else if (dist < 1) score += 5;
+
+      const titleWords = titleLower.split(/\s+/).filter((w) => w.length > 3);
+      const descWords = descLower.split(/\s+/).filter((w) => w.length > 3);
+      const issueText = (issue.title + " " + issue.description).toLowerCase();
+
+      let keywordMatches = 0;
+      [...titleWords, ...descWords].forEach((w) => {
+        if (issueText.includes(w)) keywordMatches += 1;
+      });
+      if (keywordMatches > 0) {
+        score += Math.min(keywordMatches * 5, 20);
+        reasons.push(`${keywordMatches} matching keyword(s)`);
+      }
+
+      return { issue, distanceKm: Math.round(dist * 100) / 100, score, reasons };
+    })
+    .filter(Boolean)
+    .filter((item) => item.score >= 30)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5);
+
+  return {
+    hasDuplicates: duplicates.length > 0,
+    duplicates,
+    message: duplicates.length > 0
+      ? `Found ${duplicates.length} similar issue(s) nearby. Consider linking to an existing report.`
+      : "No similar issues found nearby.",
+  };
+}
+
+/* ============================================================================
+   SLA & DEADLINE HELPERS
+   ============================================================================ */
+
+export function computeSLAStatus(issue) {
+  if (!issue.slaHours || !issue.reportedAt) {
+    return { status: "unknown", hoursRemaining: null, isOverdue: false, pctElapsed: 0 };
+  }
+
+  const reported = new Date(issue.reportedAt).getTime();
+  const now = Date.now();
+  const slaMs = issue.slaHours * 60 * 60 * 1000;
+  const elapsedMs = now - reported;
+  const remainingMs = slaMs - elapsedMs;
+  const hoursRemaining = Math.max(0, remainingMs / (1000 * 60 * 60));
+  const isOverdue = remainingMs < 0;
+  const pctElapsed = Math.min(100, Math.max(0, (elapsedMs / slaMs) * 100));
+
+  let status = "on_track";
+  if (isOverdue) status = "overdue";
+  else if (pctElapsed > 80) status = "at_risk";
+  else if (pctElapsed > 50) status = "warning";
+
+  return { status, hoursRemaining, isOverdue, pctElapsed };
+}
+
+export function formatSLAHours(hours) {
+  if (hours === null || hours === undefined) return "—";
+  const h = Math.floor(hours);
+  const m = Math.round((hours - h) * 60);
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+}
+
+/* ============================================================================
+   LEGACY SYNCHRONOUS API
+   These functions are used by Dashboard.jsx and AdminPortal.jsx and operate
+   directly on localStorage (no async/await needed). They return arrays/objects
+   synchronously for immediate React state updates.
+   ============================================================================ */
+
+/** Returns all issues from localStorage (seeds defaults if empty). */
+export { getStoredIssues };
+
+/** Alias for getStoredActivities — used in Dashboard activity feed. */
+export function getActivities() {
+  return getStoredActivities();
+}
+
+/**
+ * Creates a new civic issue, saves to localStorage, returns the full issues array.
+ * Used by Dashboard.jsx handleCreateReport().
+ */
+export function createNewIssue(issueData) {
+  const issues = getStoredIssues();
+  const newId =
+    issueData.id ||
+    `JD-${new Date().getFullYear()}-${String(issues.length + 1).padStart(2, "0")}`;
+
+  const newIssue = {
+    id: newId,
+    title: (issueData.title || "").trim(),
+    category: issueData.category || "Roads & Potholes",
+    ward: issueData.ward || "Ward 42 - Connaught Place (NDMC)",
+    status: "review",
+    latitude: Number(issueData.latitude) || 28.6139,
+    longitude: Number(issueData.longitude) || 77.209,
+    description: issueData.description
+      ? issueData.description.trim()
+      : "Reported via JanDrishti Civic Portal.",
+    reportedBy: issueData.reportedBy || "Citizen Reporter",
+    reportedAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    priority: issueData.priority || "High",
+    upvotes: 1,
+    upvotedBy: [issueData.reportedBy || "Citizen"],
+    assignedOfficer: "Assigning to Ward Engineer...",
+    slaHours:
+      issueData.priority === "Urgent"
+        ? 12
+        : issueData.priority === "High"
+        ? 24
+        : 48,
+    evidenceBefore: issueData.photoUrl || null,
+    evidenceAfter: null,
+    resolutionProof: null,
+    citizenVerified: false,
+    timeline: [
+      {
+        step: "Reported",
+        time: "Just now",
+        desc: "Ticket filed with GPS coordinates and photographic geotag.",
+      },
+    ],
+  };
+
+  issues.unshift(newIssue);
+  saveIssues(issues);
+
+  // Fire-and-forget sync to backend
+  apiRequest("/issues", {
+    method: "POST",
+    body: JSON.stringify(issueData),
+  });
+
+  return newIssue;
+}
+
+/**
+ * Updates the status of an issue in localStorage, returns updated issues array.
+ * Used by Dashboard.jsx handleVerifyIssue / handleConfirmDispute().
+ * @param {string} issueId
+ * @param {string} status - "resolved" | "progress" | "review" | "verification"
+ * @param {string} userActor
+ * @param {string} [disputeReason]
+ * @returns {Array} updated issues array
+ */
+export function updateIssueStatus(issueId, status, userActor, disputeReason) {
+  const issues = getStoredIssues();
+  const idx = issues.findIndex((i) => i.id === issueId);
+  if (idx === -1) return issues;
+
+  const issue = issues[idx];
+  const isVerified = status === "resolved";
+  const isDisputed = status === "progress" && issue.status === "verification";
+
+  if (isVerified) {
+    issue.timeline.push({
+      step: "Citizen Verified & Closed",
+      time: "Just now",
+      desc: `Confirmed resolved by ${userActor || "Citizen Inspector"}.`,
+    });
+    issue.citizenVerified = true;
+  } else if (isDisputed) {
+    issue.timeline.push({
+      step: "Citizen Disputed & Escalated",
+      time: "Just now",
+      desc: disputeReason
+        ? `Disputed: "${disputeReason}". Urgent escalation sent to Executive Engineer.`
+        : "Citizen disputed quality of repair. Reopened with priority escalation.",
+    });
+  }
+
+  issue.status = status;
+  issue.updatedAt = new Date().toISOString();
+  issues[idx] = issue;
+  saveIssues(issues);
+
+  // Fire-and-forget sync to backend
+  apiRequest(`/issues/${issueId}/status`, {
+    method: "PATCH",
+    body: JSON.stringify({ status, userActor, disputeReason }),
+  });
+
+  return issues;
+}
+
+/**
+ * Toggles an upvote for a user on an issue.
+ * Used by Dashboard.jsx handleUpvote().
+ * @returns {{ updated: Array, hasUpvoted: boolean }}
+ */
+export function toggleIssueUpvote(issueId, userIdentifier) {
+  const issues = getStoredIssues();
+  const idx = issues.findIndex((i) => i.id === issueId);
+  if (idx === -1) return { updated: issues, hasUpvoted: false };
+
+  const issue = issues[idx];
+  if (!Array.isArray(issue.upvotedBy)) issue.upvotedBy = [];
+
+  const alreadyUpvoted = issue.upvotedBy.includes(userIdentifier);
+  if (alreadyUpvoted) {
+    issue.upvotes = Math.max(0, issue.upvotes - 1);
+    issue.upvotedBy = issue.upvotedBy.filter((u) => u !== userIdentifier);
+  } else {
+    issue.upvotes += 1;
+    issue.upvotedBy.push(userIdentifier);
+  }
+  issues[idx] = issue;
+  saveIssues(issues);
+
+  // Fire-and-forget sync
+  apiRequest(`/issues/${issueId}/upvote`, {
+    method: "POST",
+    body: JSON.stringify({ userIdentifier }),
+  });
+
+  return { updated: issues, hasUpvoted: !alreadyUpvoted };
+}
+
+/**
+ * Resets all issues to the initial Delhi dataset.
+ * Used by Dashboard.jsx handleResetPrototype().
+ * @returns {Array} reset issues array
+ */
+export function resetToDefaults() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(DELHI_INITIAL_ISSUES));
+  localStorage.removeItem(ACTIVITY_KEY);
+  localStorage.removeItem(COMMENTS_KEY);
+  return DELHI_INITIAL_ISSUES;
+}
+
+/**
+ * Assigns an officer to an issue and moves it to progress status.
+ * Used by AdminPortal.jsx handleDispatchOfficer().
+ * @returns {Array} updated issues array
+ */
+export function assignOfficerToIssue(issueId, officerName, wardDivision) {
+  const issues = getStoredIssues();
+  const idx = issues.findIndex((i) => i.id === issueId);
+  if (idx === -1) return issues;
+
+  issues[idx].assignedOfficer = officerName;
+  if (issues[idx].status === "review") issues[idx].status = "progress";
+  issues[idx].updatedAt = new Date().toISOString();
+  issues[idx].timeline.push({
+    step: "Officer Dispatched",
+    time: "Just now",
+    desc: `Assigned to ${officerName} (${wardDivision || "Field Division"}). Field team mobilized.`,
+  });
+  saveIssues(issues);
+
+  // Fire-and-forget sync
+  apiRequest(`/issues/${issueId}/assign`, {
+    method: "POST",
+    body: JSON.stringify({ officerName, wardDivision }),
+  });
+
+  return issues;
+}
+
+/**
+ * Submits municipal repair proof and moves issue to verification.
+ * Used by AdminPortal.jsx handleSubmitProof().
+ * @returns {Array} updated issues array
+ */
+export function submitMunicipalRepairProof(issueId, { contractor, sealNumber, notes, photoUrl }) {
+  const issues = getStoredIssues();
+  const idx = issues.findIndex((i) => i.id === issueId);
+  if (idx === -1) return issues;
+
+  issues[idx].status = "verification";
+  issues[idx].evidenceAfter =
+    photoUrl ||
+    "https://images.unsplash.com/photo-1541888946425-d0fbb1861564?w=800&auto=format&fit=crop&q=80";
+  issues[idx].resolutionProof = {
+    sealNumber: sealNumber || `SEAL #MCD-${Math.floor(1000 + Math.random() * 9000)}`,
+    contractor: contractor || "Municipal Field Unit",
+    notes: notes || "Work inspected and repaired by municipal engineering division.",
+  };
+  issues[idx].updatedAt = new Date().toISOString();
+  issues[idx].timeline.push({
+    step: "Repair Proof Submitted",
+    time: "Just now",
+    desc: `Work claimed completed by ${contractor || "Field Team"} (${sealNumber || "Official Seal"}). Sent to citizen for verification.`,
+  });
+  saveIssues(issues);
+
+  // Fire-and-forget sync
+  apiRequest(`/issues/${issueId}/repair-proof`, {
+    method: "POST",
+    body: JSON.stringify({ contractor, sealNumber, notes, photoUrl }),
+  });
+
+  return issues;
 }

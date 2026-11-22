@@ -356,21 +356,42 @@
 
 .admin-ticket-card {
   background: var(--jd-card-bg, #ffffff);
-  border: 1px solid var(--jd-border, rgba(0, 0, 0, 0.08));
+  border: 1px solid var(--jd-border, rgba(0, 0, 0, 0.12));
   border-radius: 12px;
   padding: 14px 16px;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .admin-ticket-card:hover {
   transform: translateY(-2px);
   border-color: var(--jd-emerald, #10b981);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 }
 
 .admin-ticket-card.selected {
   border-color: var(--jd-emerald, #10b981);
   box-shadow: 0 0 0 2px var(--jd-emerald, #10b981), 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* Dark mode: make ticket cards visible without hover */
+.admin-page.dark-mode .admin-ticket-card {
+  background: #1a2a22;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.admin-page.dark-mode .admin-ticket-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--jd-emerald, #10b981);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);
+}
+
+.admin-page.dark-mode .admin-ticket-card.selected {
+  background: #1a2a22;
+  border-color: var(--jd-emerald, #10b981);
+  box-shadow: 0 0 0 2px var(--jd-emerald, #10b981), 0 8px 20px rgba(16, 185, 129, 0.2);
 }
 
 .ticket-top {
@@ -757,4 +778,227 @@
   .admin-workspace-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* --- Admin Comments Section --- */
+.admin-comments-section {
+  margin: 24px 0;
+  padding: 20px;
+  background: var(--admin-card, #ffffff);
+  border: 1px solid var(--admin-border, #e1eae4);
+  border-radius: var(--admin-radius-md, 14px);
+}
+.admin-comments-section h3 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  color: var(--admin-text, #17241e);
+}
+.admin-comment-input {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.admin-comment-input input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid var(--admin-border, #e1eae4);
+  border-radius: var(--admin-radius-sm, 8px);
+  font-size: 13px;
+  font-family: inherit;
+}
+.btn-admin-comment-submit {
+  padding: 10px 20px;
+  background: var(--admin-emerald, #10b981);
+  color: white;
+  border: none;
+  border-radius: var(--admin-radius-sm, 8px);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-admin-comment-submit:hover:not(:disabled) {
+  background: #0f5c3f;
+}
+.btn-admin-comment-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* =========================================================
+   ADMIN MODALS & DARK MODE ENHANCEMENTS
+   ========================================================= */
+
+/* Admin Dialog Modals */
+.admin-page .modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.admin-page .modal-dialog {
+  background: var(--jd-card-bg, #ffffff);
+  border: 1px solid var(--jd-border);
+  border-radius: 14px;
+  width: min(100%, 520px);
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  animation: adminModalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes adminModalPop {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.admin-page .modal-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--jd-border);
+}
+
+.admin-page .modal-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--jd-text);
+}
+
+.admin-page .modal-header p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--jd-text-muted);
+}
+
+.admin-page .modal-form-grid {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin-page .modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-page .modal-field label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--jd-text);
+}
+
+.admin-page .modal-field input,
+.admin-page .modal-field select,
+.admin-page .modal-field textarea {
+  padding: 10px 12px;
+  background: var(--jd-card-bg, #ffffff);
+  border: 1px solid var(--jd-border);
+  border-radius: 8px;
+  color: var(--jd-text);
+  font-family: inherit;
+  font-size: 13px;
+  transition: border-color 0.15s ease;
+}
+
+.admin-page .modal-field input:focus,
+.admin-page .modal-field select:focus,
+.admin-page .modal-field textarea:focus {
+  outline: none;
+  border-color: var(--jd-emerald);
+}
+
+.admin-page .modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.admin-page .btn-modal-cancel {
+  padding: 9px 16px;
+  background: transparent;
+  border: 1px solid var(--jd-border);
+  color: var(--jd-text-muted);
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-page .btn-modal-cancel:hover {
+  background: var(--jd-card-soft);
+  color: var(--jd-text);
+}
+
+.admin-page .btn-modal-submit {
+  padding: 9px 20px;
+  background: var(--jd-emerald);
+  border: none;
+  color: #ffffff;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  transition: all 0.2s ease;
+}
+
+.admin-page .btn-modal-submit:hover {
+  background: #059669;
+}
+
+/* Dark Mode Callouts and Overrides */
+.admin-page.dark-mode .action-gate-callout {
+  background: rgba(139, 92, 246, 0.14);
+  border-color: rgba(139, 92, 246, 0.35);
+  color: #c084fc;
+}
+
+.admin-page.dark-mode .action-gate-callout p {
+  color: #a78bfa;
+}
+
+.admin-page.dark-mode .action-resolved-callout {
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(16, 185, 129, 0.35);
+  color: #34d399;
+}
+
+.admin-page.dark-mode .action-resolved-callout p {
+  color: #6ee7b7;
+}
+
+.admin-page.dark-mode .ticket-badge.review {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+}
+
+.admin-page.dark-mode .ticket-badge.progress {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+}
+
+.admin-page.dark-mode .ticket-badge.verification {
+  background: rgba(139, 92, 246, 0.15);
+  color: #c084fc;
+}
+
+.admin-page.dark-mode .ticket-badge.resolved {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+}
+
+.admin-page.dark-mode .modal-field input,
+.admin-page.dark-mode .modal-field select,
+.admin-page.dark-mode .modal-field textarea {
+  background: #18251e;
+  border-color: #233429;
+  color: #eef5f0;
 }
