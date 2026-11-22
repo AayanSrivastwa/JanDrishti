@@ -1,8 +1,16 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { Eye, EyeOff, Moon, Sun, ShieldCheck } from "lucide-react";
+import {
+    Eye,
+    EyeOff,
+    Moon,
+    Sun,
+    ShieldCheck,
+} from "lucide-react";
 
-import { loginUser } from "../services/authService";
+import { loginUser } from "../Services/authService";
+import AnimatedBackground from "../components/AnimatedBackground";
 import "../styles/auth.css";
 
 export default function Login() {
@@ -10,153 +18,144 @@ export default function Login() {
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-
     const [showPassword, setShowPassword] = useState(false);
-
-    const [darkMode, setDarkMode] = useState(() => {
-        return localStorage.getItem("jandrishti-theme") === "dark";
-    });
-
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
-    const toggleTheme = () => {
-        const newTheme = !darkMode;
+    const [darkMode, setDarkMode] = useState(
+        () => localStorage.getItem("jandrishti-theme") === "dark"
+    );
 
-        setDarkMode(newTheme);
+    function toggleTheme() {
+        const nextTheme = !darkMode;
+
+        setDarkMode(nextTheme);
 
         localStorage.setItem(
             "jandrishti-theme",
-            newTheme ? "dark" : "light"
+            nextTheme ? "dark" : "light"
         );
-    };
+    }
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    async function handleSubmit(event) {
+        event.preventDefault();
 
         setError("");
         setLoading(true);
 
-        const { data, error } = await loginUser(
-            email,
-            password
-        );
+        try {
+            const { data, error: loginError } = await loginUser(
+                email.trim(),
+                password
+            );
 
-        if (error) {
-            setError(error.message);
+            if (loginError) {
+                setError(loginError.message);
+                return;
+            }
+
+            if (data?.session) {
+                navigate("/dashboard");
+            } else {
+                setError(
+                    "Login completed, but no active session was returned."
+                );
+            }
+        } catch {
+            setError("Something went wrong. Please try again.");
+        } finally {
             setLoading(false);
-            return;
         }
-
-        if (data?.session) {
-            navigate("/dashboard");
-        } else {
-            setError("Login successful, but no session was created.");
-        }
-
-        setLoading(false);
-    };
+    }
 
     return (
-        <div
-            className={`auth-page ${darkMode ? "dark-mode" : ""
-                }`}
-        >
+        <div className={`auth-page ${darkMode ? "dark-mode" : ""}`}>
 
-            {/* ================= TOP BAR ================= */}
+            <AnimatedBackground />
 
+            {/* HEADER */}
             <header className="auth-header">
 
-                <div className="auth-brand">
+                <Link to="/" className="auth-brand">
 
-                    <div className="auth-brand-mark">
-                        JD
-                    </div>
+                    <span className="auth-brand-mark">JD</span>
 
-                    <div>
+                    <span className="auth-brand-info">
                         <strong>JanDrishti</strong>
+                        <small>Civic Issue Platform</small>
+                    </span>
 
-                        <span>
-                            Civic Issue Platform
-                        </span>
-                    </div>
-
-                </div>
+                </Link>
 
                 <button
+                    type="button"
                     className="auth-theme-button"
                     onClick={toggleTheme}
-                    type="button"
                     aria-label="Toggle theme"
-                    title={
-                        darkMode
-                            ? "Switch to light mode"
-                            : "Switch to dark mode"
-                    }
                 >
-                    {darkMode ? (
-                        <Sun size={18} />
-                    ) : (
-                        <Moon size={18} />
-                    )}
+                    {darkMode ? <Sun size={18} /> : <Moon size={18} />}
                 </button>
 
             </header>
 
-
-            {/* ================= LOGIN AREA ================= */}
-
+            {/* MAIN */}
             <main className="auth-main">
 
-                <div className="auth-card">
+                <section className="auth-card">
 
-                    {/* LEFT SIDE */}
-
+                    {/* LEFT INTRO SECTION */}
                     <div className="auth-intro">
 
                         <div className="auth-intro-icon">
-                            <ShieldCheck size={22} />
+                            <ShieldCheck size={25} />
                         </div>
 
                         <span className="auth-eyebrow">
-                            JANDRISHTI
+                            YOUR COMMUNITY, YOUR VOICE
                         </span>
 
-                        <h1>
-                            Welcome Back
-                        </h1>
+                        <h1>Welcome back.</h1>
 
                         <p>
-                            Sign in to report civic issues,
-                            track your complaints and verify
-                            resolutions in your community.
+                            Sign in to report local problems, follow their
+                            progress, and help make your community better.
                         </p>
 
-                        <div className="auth-intro-line"></div>
+                        <div className="auth-promise">
 
-                        <span className="auth-intro-note">
-                            Report. Resolve. Verify.
-                        </span>
+                            <div>
+                                <span>01</span>
+                                <p>Report issues</p>
+                            </div>
 
-                    </div>
+                            <div>
+                                <span>02</span>
+                                <p>Track progress</p>
+                            </div>
 
-
-                    {/* RIGHT SIDE */}
-
-                    <div className="auth-form-section">
-
-                        <div className="auth-form-heading">
-
-                            <h2>
-                                Login
-                            </h2>
-
-                            <p>
-                                Access your JanDrishti account
-                            </p>
+                            <div>
+                                <span>03</span>
+                                <p>Verify resolution</p>
+                            </div>
 
                         </div>
 
+                    </div>
+
+                    {/* RIGHT LOGIN FORM */}
+                    <div className="auth-form-section">
+
+                        <span className="auth-form-label">
+                            CITIZEN PORTAL
+                        </span>
+
+                        <div className="auth-form-heading">
+                            <h2>Sign in to your account</h2>
+
+                            <p>
+                                Enter your account details below.
+                            </p>
+                        </div>
 
                         <form
                             className="auth-form"
@@ -164,70 +163,61 @@ export default function Login() {
                         >
 
                             {/* EMAIL */}
+                            <div className="auth-field">
 
-                            <div className="form-field">
-
-                                <label htmlFor="email">
-                                    Email Address
+                                <label htmlFor="login-email">
+                                    Email address
                                 </label>
 
                                 <input
-                                    id="email"
+                                    id="login-email"
                                     type="email"
-                                    placeholder="Enter your email"
+                                    autoComplete="email"
+                                    placeholder="you@example.com"
                                     value={email}
-                                    onChange={(e) =>
-                                        setEmail(e.target.value)
+                                    onChange={(event) =>
+                                        setEmail(event.target.value)
                                     }
                                     required
-                                    autoComplete="email"
                                 />
 
                             </div>
 
-
                             {/* PASSWORD */}
+                            <div className="auth-field">
 
-                            <div className="form-field">
-
-                                <label htmlFor="password">
+                                <label htmlFor="login-password">
                                     Password
                                 </label>
 
-                                <div className="password-wrapper">
+                                <div className="auth-password-field">
 
                                     <input
-                                        id="password"
-                                        type={
-                                            showPassword
-                                                ? "text"
-                                                : "password"
-                                        }
+                                        id="login-password"
+                                        type={showPassword ? "text" : "password"}
+                                        autoComplete="current-password"
                                         placeholder="Enter your password"
                                         value={password}
-                                        onChange={(e) =>
-                                            setPassword(e.target.value)
+                                        onChange={(event) =>
+                                            setPassword(event.target.value)
                                         }
                                         required
-                                        autoComplete="current-password"
                                     />
 
                                     <button
                                         type="button"
-                                        className="password-toggle"
+                                        className="auth-password-toggle"
                                         onClick={() =>
                                             setShowPassword(!showPassword)
                                         }
                                         aria-label={
-                                            showPassword
-                                                ? "Hide password"
-                                                : "Show password"
+                                            showPassword ? "Hide password" : "Show password"
                                         }
                                     >
                                         {showPassword ? (
-                                            <EyeOff size={17} />
+                                            <EyeOff size={18} />
                                         ) : (
-                                            <Eye size={17} />
+                                            <Eye size={18} />
                                         )}
                                     </button>
 
@@ -235,62 +225,49 @@ export default function Login() {
 
                             </div>
 
-
-                            {/* ERROR */}
-
+                            {/* ERROR MESSAGE */}
                             {error && (
-                                <div className="auth-error">
+                                <p className="auth-error" role="alert">
                                     {error}
-                                </div>
+                                </p>
                             )}
 
-
-                            {/* LOGIN */}
-
+                            {/* LOGIN BUTTON */}
                             <button
-                                type="submit"
                                 className="auth-submit"
+                                type="submit"
                                 disabled={loading}
                             >
                                 {loading
                                     ? "Signing in..."
-                                    : "Login"}
+                                    : "Sign in to JanDrishti"}
                             </button>
 
                         </form>
 
-
-                        {/* REGISTER */}
-
-                        <div className="auth-register">
-
-                            <span>
-                                Don't have an account?
-                            </span>
-
+                        {/* REGISTER LINK */}
+                        <p className="auth-register">
+                            Don't have an account?
                             <Link to="/register">
-                                Create Account
+                                Create account
                             </Link>
-
-                        </div>
+                        </p>
 
                     </div>
 
-                </div>
+                </section>
 
             </main>
 
-
-            {/* ================= FOOTER ================= */}
-
+            {/* FOOTER */}
             <footer className="auth-footer">
 
                 <span>
-                    JanDrishti
+                    JanDrishti · Report. Resolve. Verify.
                 </span>
 
                 <span>
-                    SDG 11 · Sustainable Cities & Communities
+                    Supporting SDG 11 — Sustainable Cities and Communities
                 </span>
 
             </footer>

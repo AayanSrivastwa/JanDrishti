@@ -1,0 +1,109 @@
+.animated-background {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+
+    background: linear-gradient(135deg,
+            #f5faf7,
+            #e8f8ef,
+            #f7fbf8,
+            #dcf5e7);
+
+    background-size: 300% 300%;
+    animation: backgroundFlow 16s ease infinite;
+}
+
+/* First moving green glow */
+.animated-background::before {
+    content: "";
+    position: absolute;
+    width: 650px;
+    height: 650px;
+    top: -180px;
+    left: -120px;
+
+    background: radial-gradient(circle,
+            rgba(52, 211, 153, 0.28) 0%,
+            rgba(134, 239, 172, 0.15) 40%,
+            transparent 70%);
+
+    border-radius: 50%;
+    filter: blur(45px);
+    animation: floatGlowOne 12s ease-in-out infinite alternate;
+}
+
+/* Second moving green glow */
+.animated-background::after {
+    content: "";
+    position: absolute;
+    width: 750px;
+    height: 750px;
+    right: -180px;
+    bottom: -250px;
+
+    background: radial-gradient(circle,
+            rgba(16, 185, 129, 0.23) 0%,
+            rgba(167, 243, 208, 0.15) 40%,
+            transparent 70%);
+
+    border-radius: 50%;
+    filter: blur(55px);
+    animation: floatGlowTwo 15s ease-in-out infinite alternate;
+}
+
+/* Slowly shifting background */
+@keyframes backgroundFlow {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* Move the first glow */
+@keyframes floatGlowOne {
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    50% {
+        transform: translate(180px, 120px) scale(1.15);
+    }
+
+    100% {
+        transform: translate(80px, 240px) scale(0.95);
+    }
+}
+
+/* Move the second glow */
+@keyframes floatGlowTwo {
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    50% {
+        transform: translate(-160px, -100px) scale(1.1);
+    }
+
+    100% {
+        transform: translate(-80px, -220px) scale(0.9);
+    }
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+
+    .animated-background,
+    .animated-background::before,
+    .animated-background::after {
+        animation: none;
+    }
+}
