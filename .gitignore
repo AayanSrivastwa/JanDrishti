@@ -24,6 +24,11 @@ dist-ssr
 *.sw?
 node_modules
 dist
+# Environment variables — never commit secrets
 .env
 .env.local
 .env.*.local
+backend/.env
+backend/.env.*
+frontend/.env
+frontend/.env.*

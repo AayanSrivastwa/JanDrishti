@@ -12,6 +12,7 @@ import {
 import { loginUser } from "../Services/authService";
 import AnimatedBackground from "../components/AnimatedBackground";
 import "../styles/auth.css";
+import { useTheme } from "../context/ThemeContext";
 
 export default function Login() {
     const navigate = useNavigate();
@@ -22,20 +23,9 @@ export default function Login() {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
-    const [darkMode, setDarkMode] = useState(
-        () => localStorage.getItem("jandrishti-theme") === "dark"
-    );
-
-    function toggleTheme() {
-        const nextTheme = !darkMode;
-
-        setDarkMode(nextTheme);
-
-        localStorage.setItem(
-            "jandrishti-theme",
-            nextTheme ? "dark" : "light"
-        );
-    }
+    // Light / Dark Theme State (shared via ThemeContext)
+    const { theme, toggleTheme } = useTheme();
+    const darkMode = theme === "dark";
 
     async function handleSubmit(event) {
         event.preventDefault();

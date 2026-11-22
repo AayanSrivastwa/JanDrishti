@@ -107,3 +107,32 @@
         animation: none;
     }
 }
+
+/* Dark mode variant for the animated background */
+[data-theme="dark"] .animated-background {
+    background: linear-gradient(
+        135deg,
+        #020605,
+        #050a07,
+        #030805,
+        #070d0a
+    );
+}
+
+[data-theme="dark"] .animated-background::before {
+    background: radial-gradient(
+        circle,
+        rgba(16, 185, 129, 0.10) 0%,
+        rgba(52, 211, 153, 0.05) 40%,
+        transparent 70%
+    );
+}
+
+[data-theme="dark"] .animated-background::after {
+    background: radial-gradient(
+        circle,
+        rgba(16, 185, 129, 0.08) 0%,
+        rgba(167, 243, 208, 0.05) 40%,
+        transparent 70%
+    );
+}

@@ -6,11 +6,13 @@ import {
 } from "react-router";
 
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { ThemeProvider } from "./context/ThemeContext";
 
 import LandingPage from "./pages/LandingPage";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import AdminPortal from "./pages/AdminPortal";
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -44,6 +46,15 @@ function AppRoutes() {
         }
       />
 
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute>
+            <AdminPortal />
+          </ProtectedRoute>
+        }
+      />
+
       {/* Catch-all redirect to landing */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
@@ -53,9 +64,11 @@ function AppRoutes() {
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <AppRoutes />
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   );
 }

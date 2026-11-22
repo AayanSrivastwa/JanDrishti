@@ -1,13 +1,15 @@
 import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
 import {
   Clock,
   ShieldCheck,
   AlertTriangle,
   CheckCircle2,
   Navigation,
+  ThumbsUp,
+  MapPin,
 } from "lucide-react";
 
 // Fix default marker icon issues in Leaflet with Vite
@@ -77,14 +79,13 @@ function MapController({ center, zoom }) {
   const prevCenterRef = useRef(null);
 
   useEffect(() => {
-    // Invalidate map size on render to fix any Leaflet container display issues
     map.invalidateSize();
   }, [map]);
 
   useEffect(() => {
     if (center && (!prevCenterRef.current || prevCenterRef.current[0] !== center[0] || prevCenterRef.current[1] !== center[1])) {
       prevCenterRef.current = center;
-      map.flyTo(center, zoom || 14, {
+      map.flyTo(center, zoom || 13, {
         duration: 1.2,
         easeLinearity: 0.25,
       });
@@ -94,16 +95,30 @@ function MapController({ center, zoom }) {
   return null;
 }
 
+// Click listener to pick GPS coordinates
+function MapClickPicker({ onMapClick }) {
+  useMapEvents({
+    click(e) {
+      if (onMapClick) {
+        onMapClick(e.latlng);
+      }
+    },
+  });
+  return null;
+}
+
 export default function CivicMap({
   issues = [],
   selectedIssue = null,
   onSelectIssue,
   onVerifyIssue,
+  onUpvoteIssue,
+  onMapClick,
   darkMode = false,
   userLocation = null,
   onLocateMe,
-  center = [12.9716, 77.5946],
-  zoom = 13,
+  center = [28.6139, 77.2090], // Delhi Center (Connaught Place)
+  zoom = 12,
 }) {
   const mapCenter = selectedIssue
     ? [selectedIssue.latitude, selectedIssue.longitude]
@@ -156,8 +171,10 @@ export default function CivicMap({
       >
         <MapController
           center={mapCenter}
-          zoom={selectedIssue ? 15 : zoom}
+          zoom={selectedIssue ? 14 : zoom}
         />
+
+        <MapClickPicker onMapClick={onMapClick} />
 
         <TileLayer attribution={tileAttribution} url={tileUrl} />
 
@@ -170,7 +187,7 @@ export default function CivicMap({
             <Popup>
               <div className="civic-popup-content user-popup">
                 <strong>📍 You are here</strong>
-                <p>Showing civic infrastructure reports in your immediate vicinity.</p>
+                <p>Showing civic infrastructure reports in your immediate vicinity in Delhi NCR.</p>
               </div>
             </Popup>
           </Marker>
@@ -204,7 +221,7 @@ export default function CivicMap({
                       {issue.status === "review" && "⏳ Under Review"}
                     </span>
                     <span className="popup-time">
-                      <Clock size={11} /> {issue.timeAgo || "Recently"}
+                      <Clock size={11} /> {issue.id}
                     </span>
                   </div>
 
@@ -213,10 +230,31 @@ export default function CivicMap({
 
                   <div className="popup-meta">
                     <span className="popup-ward">
-                      📍 {issue.ward}
+                      <MapPin size={12} /> {issue.ward}
                     </span>
                     <span className="popup-category">
                       📁 {issue.category} • Priority: <strong>{issue.priority || "Normal"}</strong>
+                    </span>
+                  </div>
+
+                  {/* Upvote & Action Bar */}
+                  <div className="popup-footer-row">
+                    {onUpvoteIssue && (
+                      <button
+                        type="button"
+                        className="popup-btn-upvote"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onUpvoteIssue(issue.id);
+                        }}
+                      >
+                        <ThumbsUp size={12} />
+                        <span>Upvote ({issue.upvotes || 0})</span>
+                      </button>
+                    )}
+
+                    <span className="popup-officer">
+                      {issue.assignedOfficer || "Ward Division"}
                     </span>
                   </div>
 
@@ -234,7 +272,7 @@ export default function CivicMap({
                         className="popup-btn-dispute"
                         onClick={() => onVerifyIssue(issue.id, "progress")}
                       >
-                        <AlertTriangle size={14} /> Reopen
+                        <AlertTriangle size={14} /> Dispute
                       </button>
                     </div>
                   )}
