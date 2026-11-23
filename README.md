@@ -1,646 +1,469 @@
-# JanDrishti 🏙️
 
-## Citizen-Verified Civic Issue Resolution Platform
+<div align="center">
 
-> **Report. Resolve. Verify.**
+# 🏙️ JanDrishti
+### Citizen-Verified Civic Issue Resolution Platform
 
-JanDrishti is a web-based civic technology platform designed to make local civic issue reporting and resolution more transparent and accountable.
+**Report. Resolve. Verify.**
 
-Citizens can report problems such as potholes, broken streetlights, water leakage, garbage accumulation, blocked public spaces, and other infrastructure issues. Administrators can review these reports, manage their progress, take corrective action, and provide resolution evidence.
+A full-stack civic-tech platform empowering citizens to report local issues, track progress, and verify resolutions.
 
+[![Live Website](https://img.shields.io/badge/Live_Website-Visit_JanDrishti-16845B?style=for-the-badge&logo=vercel&logoColor=white)](https://jandrishti-tan.vercel.app/)
 
-The key feature of JanDrishti is **Citizen Verification of Claimed Resolutions**.
+![React](https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-Express-339933?logo=nodedotjs&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-Authentication-3FCF8E?logo=supabase&logoColor=white)
+![Leaflet](https://img.shields.io/badge/Maps-Leaflet-199900?logo=leaflet&logoColor=white)
 
-An issue is not considered completely resolved simply because an administrator marks it as "Resolved". The citizen who reported the issue gets an opportunity to verify whether the problem has actually been fixed.
+**Aligned with UN Sustainable Development Goal 11 — Sustainable Cities and Communities**
 
----
-
-## 📌 Problem Statement
-
-Civic issues are common in local communities, but the process of reporting and tracking these problems can lack transparency.
-
-In many existing workflows:
-
-* Citizens report an issue.
-* Authorities take action.
-* The issue is marked as resolved.
-* The citizen may have no structured way to confirm whether the problem was actually fixed.
-
-This creates a gap between **administrative resolution** and **actual resolution experienced by citizens**.
-
-JanDrishti addresses this gap by introducing a citizen verification stage after an administrator claims that an issue has been resolved.
+</div>
 
 ---
 
-## 💡 Proposed Solution
+## 🌐 Live Demo
 
-JanDrishti connects citizens and administrators through a structured civic issue lifecycle.
+**Website:** https://jandrishti-tan.vercel.app/
+
+Explore JanDrishti's civic reporting interface, interactive maps, issue dashboard, and citizen verification experience.
+
+> **Project Status:** Functional prototype. The application currently includes demo data and in-memory backend storage. Production-grade persistent issue storage and server-side authorization are planned improvements.
+
+---
+
+## 📖 About the Project
+
+**JanDrishti** is a civic issue reporting and resolution tracking platform designed to bridge the communication gap between citizens and local authorities.
+
+Every day, communities face problems such as damaged roads, overflowing garbage, broken streetlights, water leakage, and poor drainage. Reporting these problems and tracking their resolution can be difficult.
+
+JanDrishti provides a centralized platform where citizens can report issues, identify their locations on an interactive map, monitor progress, and participate in verifying whether reported problems have actually been resolved.
+
+### 💡 What Makes JanDrishti Different?
+
+Traditional grievance systems often mark complaints as resolved based on administrative updates alone.
+
+JanDrishti introduces a **citizen verification workflow**, allowing citizens to confirm or dispute a claimed resolution.
+
+Our core principle is:
+
+**An issue should not simply be marked resolved — its resolution should be verifiable.**
+
+---
+
+## ✨ Key Features
+
+### 👤 Citizen Portal
+
+- **User Authentication:** Registration, login, and session management through Supabase authentication integration.
+- **Report Civic Issues:** Submit complaints about roads, sanitation, water supply, streetlights, and other public infrastructure.
+- **Interactive Map:** Explore geographically located issues using Leaflet and OpenStreetMap.
+- **Issue Tracking:** Follow reported issues through different resolution stages.
+- **Community Engagement:** Support relevant issues through upvotes and comments.
+- **Citizen Verification:** Verify or dispute resolutions submitted by administrators.
+- **Issue History:** View progress updates and activity records.
+- **Responsive Interface:** Accessible across desktop and mobile devices.
+
+### 🛠️ Admin Portal
+
+- Review reported civic issues.
+- Monitor issue categories and priorities.
+- Assign issues to responsible officers.
+- Update issue progress and status.
+- Submit repair evidence.
+- Review issue statistics and activity.
+
+> The current admin interface is part of the prototype. Production deployment requires server-side role-based authorization.
+
+### 🗺️ Interactive Civic Map
+
+JanDrishti integrates Leaflet with OpenStreetMap to provide an interactive geographical view of civic issues.
+
+Features include:
+
+- Map markers for reported problems.
+- Location-based issue visualization.
+- Issue details through map popups.
+- Category-based issue identification.
+- Map location selection.
+- GPS-based positioning where permitted.
+
+**No Leaflet API key is required** for the current OpenStreetMap tile configuration.
+
+---
+
+## 🔄 How JanDrishti Works
 
 ```text
-Citizen Reports Issue
-        ↓
-Administrative Review
-        ↓
-Issue Assignment
-        ↓
-Corrective Action
-        ↓
-Resolution Evidence
-        ↓
-Citizen Verification
-        ↓
- ┌───────────────┐
- │               │
- ▼               ▼
-Verified      Not Verified
- │               │
- ▼               ▼
-Closed         Reopened
+        ┌───────────────────────┐
+        │   Citizen Reports     │
+        │      an Issue         │
+        └───────────┬───────────┘
+                    │
+                    ▼
+        ┌───────────────────────┐
+        │ Issue Appears on Map  │
+        │     & Dashboard       │
+        └───────────┬───────────┘
+                    │
+                    ▼
+        ┌───────────────────────┐
+        │  Admin Reviews and    │
+        │    Assigns Issue      │
+        └───────────┬───────────┘
+                    │
+                    ▼
+        ┌───────────────────────┐
+        │   Repair Progress     │
+        │  & Evidence Updated   │
+        └───────────┬───────────┘
+                    │
+                    ▼
+        ┌───────────────────────┐
+        │ Citizen Verification  │
+        └───────────┬───────────┘
+                    │
+             ┌──────┴──────┐
+             ▼             ▼
+        Verified        Disputed
+             │             │
+             ▼             ▼
+          Resolved       Reopened
 ```
 
-This workflow creates a transparent record of:
-
-* Original issue report
-* Issue location
-* Administrative actions
-* Resolution evidence
-* Citizen verification
-* Reopening requests
-* Final resolution status
+*This illustrates the intended end-to-end workflow, including features currently demonstrated using prototype data.*
 
 ---
 
-# 🎯 Objectives
+## 🛠️ Tech Stack
 
-1. Provide a centralized platform for reporting civic issues.
-2. Allow citizens to submit descriptions, photographs, and location information.
-3. Provide administrators with a dashboard for managing reported issues.
-4. Maintain a structured lifecycle for every civic issue.
-5. Allow administrators to provide details about corrective actions.
-6. Allow administrators to upload resolution evidence.
-7. Introduce citizen verification of claimed resolutions.
-8. Allow citizens to classify resolutions as:
-
-   * ✅ Resolved
-   * ⚠️ Partially Resolved
-   * ❌ Not Resolved
-9. Allow unresolved issues to be reopened.
-10. Maintain a history of issue updates and verification decisions.
-11. Provide analytics for monitoring civic issues.
-12. Visualize reported issues using interactive maps.
-13. Encourage citizen participation in local civic management.
-14. Support the principles of **SDG 11 – Sustainable Cities and Communities**.
+| Category | Technologies |
+|----------|-------------|
+| Frontend | React.js, Vite, JavaScript, CSS |
+| Backend | Node.js, Express.js |
+| Authentication | Supabase Auth |
+| Maps | Leaflet, React Leaflet, OpenStreetMap |
+| Charts | Chart.js, React Chart.js 2 |
+| Routing | React Router |
+| Icons | Lucide React |
+| API Architecture | REST APIs |
+| Prototype Data | Express in-memory storage, localStorage |
+| Frontend Deployment | Vercel |
+| Version Control | Git, GitHub |
+| Development Tools | VS Code, npm |
 
 ---
 
-# ✨ Key Features
-
-## 👤 Citizen Module
-
-Citizens can:
-
-* Register and log in
-* Report civic issues
-* Select issue categories
-* Add descriptions
-* Upload photographs
-* Provide issue location
-* View submitted issues
-* Track issue status
-* View issue history
-* View administrator updates
-* View resolution evidence
-* Verify claimed resolutions
-* Mark issues as:
-
-  * ✅ Resolved
-  * ⚠️ Partially Resolved
-  * ❌ Not Resolved
-* Request reopening of unresolved issues
-
----
-
-## 🛠️ Admin Module
-
-Administrators can:
-
-* Securely log in
-* View reported issues
-* Search and filter issues
-* View complete issue details
-* View uploaded photographs
-* View issue locations
-* Update issue status
-* Assign issues
-* Add action details
-* Upload resolution evidence
-* Review citizen verification
-* Reopen disputed issues
-* Monitor issue statistics
-
----
-
-# 📍 Location & Mapping
-
-JanDrishti uses location information to provide a geographical view of reported civic problems.
-
-Planned mapping functionality includes:
-
-* Interactive issue map
-* Issue markers
-* Location-based issue viewing
-* Issue information through map markers
-* Civic problem visualization
-
-### Mapping Technology
-
-* Leaflet.js
-* OpenStreetMap
-
----
-
-# 🔍 Citizen Resolution Verification
-
-The core feature of JanDrishti is the **Citizen Verification Workflow**.
-
-When an administrator marks an issue as resolved, the citizen receives the opportunity to verify the claimed resolution.
-
-### Verification Flow
+## 🏗️ System Architecture
 
 ```text
-Issue Reported
-      ↓
-Admin Review
-      ↓
-Issue Assigned
-      ↓
-Corrective Action
-      ↓
-Resolution Evidence
-      ↓
-Citizen Verification
-      ↓
- ┌───────────────┐
- │               │
- ▼               ▼
-Resolved     Not Resolved
- │               │
- ▼               ▼
-Closed        Reopened
+                 ┌──────────────────┐
+                 │      CITIZEN     │
+                 │       ADMIN      │
+                 └────────┬─────────┘
+                          │
+                          ▼
+             ┌────────────────────────┐
+             │     REACT FRONTEND     │
+             │                        │
+             │  Landing Page          │
+             │  Authentication        │
+             │  Citizen Dashboard     │
+             │  Admin Portal          │
+             │  Interactive Map       │
+             └────────────┬───────────┘
+                          │
+              ┌───────────┴───────────┐
+              │                       │
+              ▼                       ▼
+      ┌──────────────┐       ┌─────────────────┐
+      │ SUPABASE AUTH│       │ EXPRESS REST API│
+      │              │       │                 │
+      │ Registration │       │ Issue CRUD      │
+      │ Login        │       │ Status Updates  │
+      │ Sessions     │       │ Assignments     │
+      └──────────────┘       │ Verification    │
+                             │ Statistics      │
+                             └────────┬────────┘
+                                      │
+                                      ▼
+                             ┌─────────────────┐
+                             │ IN-MEMORY DATA  │
+                             │ Prototype State │
+                             └─────────────────┘
 ```
 
-Citizens can select:
-
-| Verification          | Result                                      |
-| --------------------- | ------------------------------------------- |
-| ✅ Resolved            | Issue can proceed toward closure            |
-| ⚠️ Partially Resolved | Issue can be reopened for additional action |
-| ❌ Not Resolved        | Issue is reopened                           |
-
-This prevents an issue from being considered successfully resolved solely on the basis of an administrative status update.
+The current prototype uses in-memory backend issue data and browser localStorage fallback. Persistent PostgreSQL integration is part of the development roadmap.
 
 ---
 
-# 🔄 Issue Lifecycle
-
-Every issue follows a structured lifecycle.
+## 📂 Project Structure
 
 ```text
-Reported
-   ↓
-Under Review
-   ↓
-Assigned
-   ↓
-In Progress
-   ↓
-Resolution Submitted
-   ↓
-Citizen Verification
-   ↓
- ┌───────────────┐
- │               │
- ▼               ▼
-Verified       Reopened
- │               │
- ▼               │
-Closed ←─────────┘
-```
-
-### Issue Statuses
-
-* `Reported`
-* `Under Review`
-* `Assigned`
-* `In Progress`
-* `Resolved`
-* `Reopened`
-* `Closed`
-
----
-
-# 📊 Dashboard & Analytics
-
-The administrator dashboard will provide an overview of civic issues.
-
-Possible metrics include:
-
-* Total Issues
-* Pending Issues
-* Issues Under Review
-* Issues In Progress
-* Resolved Issues
-* Reopened Issues
-* Closed Issues
-* Citizen Verification Rate
-* Resolution Verification Outcomes
-* Issues by Category
-* Issues by Location
-
----
-
-# 🏗️ System Architecture
-
-```text
-┌──────────────────────────────┐
-│          Citizens            │
-│                              │
-│  Report / Track / Verify     │
-└──────────────┬───────────────┘
-               │
-               ▼
-┌──────────────────────────────┐
-│       React Frontend         │
-│                              │
-│ Citizen Portal               │
-│ Admin Dashboard              │
-│ Issue Management             │
-│ Map Interface                │
-└──────────────┬───────────────┘
-               │
-               ▼
-┌──────────────────────────────┐
-│          Supabase            │
-│                              │
-│ Authentication               │
-│ PostgreSQL Database          │
-│ Storage                      │
-│ Row Level Security           │
-└──────────────┬───────────────┘
-               │
-               ▼
-┌──────────────────────────────┐
-│     Application Data         │
-│                              │
-│ Users                        │
-│ Issues                       │
-│ Updates                      │
-│ Evidence                     │
-│ Verification                 │
-└──────────────────────────────┘
-```
-
----
-
-# 🧰 Technology Stack
-
-## Frontend
-
-* React.js
-* Vite
-* JavaScript
-* HTML
-* CSS
-
-## Backend / Platform Services
-
-* Supabase
-* Supabase Authentication
-* PostgreSQL
-* Supabase Storage
-
-## Mapping
-
-* Leaflet.js
-* OpenStreetMap
-
-## Development Tools
-
-* Visual Studio Code
-* Git
-* GitHub
-* npm
-
----
-
-# 🗄️ Database Design
-
-The application is designed around the following core entities:
-
-```text
-profiles
-    │
-    ▼
-issues
-    │
-    ├──────────────► issue_updates
-    │
-    ├──────────────► resolution_evidence
-    │
-    └──────────────► citizen_verifications
-```
-
-### Main Tables
-
-#### `profiles`
-
-Stores user information and roles.
-
-Possible fields:
-
-```text
-id
-name
-email
-role
-created_at
-```
-
-Roles:
-
-```text
-citizen
-admin
-```
-
----
-
-#### `issues`
-
-Stores civic issue reports.
-
-Possible fields:
-
-```text
-id
-user_id
-title
-description
-category
-image_url
-latitude
-longitude
-status
-created_at
-updated_at
-```
-
----
-
-#### `issue_updates`
-
-Stores administrative updates and actions.
-
-Possible fields:
-
-```text
-id
-issue_id
-admin_id
-status
-action_description
-created_at
-```
-
----
-
-#### `resolution_evidence`
-
-Stores evidence submitted by administrators after corrective action.
-
-Possible fields:
-
-```text
-id
-issue_id
-admin_id
-evidence_url
-description
-created_at
-```
-
----
-
-#### `citizen_verifications`
-
-Stores citizen responses to claimed resolutions.
-
-Possible fields:
-
-```text
-id
-issue_id
-citizen_id
-verification_status
-comment
-created_at
-```
-
-Possible verification values:
-
-```text
-resolved
-partially_resolved
-not_resolved
-```
-
----
-
-# 🔐 Security & Privacy
-
-JanDrishti will use Supabase security mechanisms to protect application data.
-
-Security considerations include:
-
-* Authentication through Supabase Auth
-* Role-based access control
-* Row Level Security
-* Protected administrator operations
-* Controlled database access
-* Secure file storage
-* Environment variables for sensitive configuration
-* Validation of user-submitted data
-
-Sensitive credentials and environment variables should never be committed to the repository.
-
----
-
-# 🧪 Testing & Evaluation
-
-The system can be evaluated using:
-
-### Functional Testing
-
-* User registration
-* Login
-* Issue reporting
-* Image upload
-* Issue tracking
-* Admin status updates
-* Resolution evidence upload
-* Citizen verification
-* Issue reopening
-
-### Performance
-
-* Page load time
-* Database response time
-* Image upload performance
-* API response time
-
-### Usability
-
-* Ease of issue reporting
-* Dashboard usability
-* Navigation
-* Mobile responsiveness
-* Verification workflow clarity
-
-### Reliability
-
-* Data persistence
-* Authentication reliability
-* Issue lifecycle consistency
-* Verification accuracy
-
----
-
-# 🌍 SDG Alignment
-
-JanDrishti supports:
-
-### SDG 11 — Sustainable Cities and Communities
-
-The project promotes:
-
-* Citizen participation
-* Better civic issue reporting
-* Transparent issue tracking
-* Community involvement
-* Improved accountability
-* Sustainable urban management
-
----
-
-# 🚀 Future Scope
-
-Potential future improvements include:
-
-* Mobile application
-* Push notifications
-* Email notifications
-* AI-assisted issue categorization
-* Duplicate issue detection
-* Automatic image analysis
-* Heatmaps for civic problems
-* Advanced analytics
-* Government department integration
-* Multilingual support
-* Public issue transparency portal
-* Citizen reputation / contribution system
-* Predictive identification of recurring civic issues
-
----
-
-# 📂 Project Structure
-
-```text
-JanDrishti/
+jandrishti/
 │
-├── public/
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── CivicMap.jsx
+│   │   │   ├── AnimatedBackground.jsx
+│   │   │   ├── CommentSection.jsx
+│   │   │   ├── DuplicateWarning.jsx
+│   │   │   ├── PhotoComparisonSlider.jsx
+│   │   │   ├── ShareIssue.jsx
+│   │   │   └── SLACountdown.jsx
+│   │   │
+│   │   ├── context/
+│   │   │   ├── AuthContext.jsx
+│   │   │   └── ThemeContext.jsx
+│   │   │
+│   │   ├── lib/
+│   │   │   └── supabaseClient.js
+│   │   │
+│   │   ├── pages/
+│   │   │   ├── LandingPage.jsx
+│   │   │   ├── Login.jsx
+│   │   │   ├── Register.jsx
+│   │   │   ├── Dashboard.jsx
+│   │   │   └── AdminPortal.jsx
+│   │   │
+│   │   ├── Services/
+│   │   │   ├── authService.js
+│   │   │   └── issueService.js
+│   │   │
+│   │   └── styles/
+│   │
+│   └── package.json
 │
-├── src/
-│   ├── assets/
+├── backend/
+│   ├── src/
+│   │   ├── data/
+│   │   │   └── initialIssues.js
+│   │   ├── routes/
+│   │   │   ├── issues.js
+│   │   │   ├── activities.js
+│   │   │   ├── stats.js
+│   │   │   ├── comments.js
+│   │   │   └── duplicate.js
+│   │   └── server.js
 │   │
-│   ├── components/
-│   │
-│   ├── pages/
-│   │
-│   ├── layouts/
-│   │
-│   ├── services/
-│   │
-│   ├── hooks/
-│   │
-│   ├── lib/
-│   │   └── supabaseClient.js
-│   │
-│   ├── App.jsx
-│   ├── App.css
-│   ├── index.css
-│   └── main.jsx
+│   └── package.json
 │
-├── .gitignore
-├── index.html
+├── docs/
+│   └── ARCHITECTURE.md
+│
 ├── package.json
-├── package-lock.json
-├── vite.config.js
 └── README.md
 ```
 
 ---
 
-# 📈 Project Status
+## 🚀 Installation and Setup
 
-### Current Stage
+### Prerequisites
 
-🟡 **Development**
+Ensure you have installed:
 
-The current repository contains the initial React/Vite project structure and Supabase client configuration.
+- Node.js and npm
+- Git
+- VS Code or another code editor
+- A Supabase project for authentication configuration
 
-### Development Roadmap
+### Step 1: Clone the Repository
 
-```text
-[x] Project Setup
-[x] React + Vite Setup
-[x] GitHub Repository
-[x] Supabase Client Setup
-
-[ ] Authentication
-[ ] User Profiles
-[ ] Citizen Dashboard
-[ ] Admin Dashboard
-[ ] Issue Reporting
-[ ] Issue Management
-[ ] Image Upload
-[ ] Issue Status Workflow
-[ ] Resolution Evidence
-[ ] Citizen Verification
-[ ] Issue Reopening
-[ ] Interactive Map
-[ ] Analytics Dashboard
-[ ] Testing
-[ ] Deployment
+```bash
+git clone https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
+cd YOUR_REPOSITORY
 ```
 
+Replace the placeholder with your repository URL.
+
+### Step 2: Install Dependencies
+
+From the project root:
+
+```bash
+npm install
+npm --prefix frontend install
+npm --prefix backend install
+```
+
+### Step 3: Configure Environment Variables
+
+Create a `.env.local` file inside the `frontend` directory.
+
+```env
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
+VITE_BACKEND_URL=http://localhost:5000/api
+```
+
+Create a `.env` file inside the `backend` directory.
+
+```env
+PORT=5000
+NODE_ENV=development
+```
+
+**Security:** Never commit secret credentials or service-role keys to GitHub. Frontend environment variables prefixed with `VITE_` are exposed to the browser.
+
+### Step 4: Start the Application
+
+Run the frontend and backend together:
+
+```bash
+npm run dev
+```
+
+Alternatively, run them separately:
+
+```bash
+npm run dev:frontend
+```
+
+```bash
+npm run dev:backend
+```
+
+### Step 5: Open the Application
+
+| Service | URL |
+|---------|-----|
+| Frontend | http://localhost:5173 |
+| Backend | http://localhost:5000 |
+| API Health Check | http://localhost:5000/api/health |
+
 ---
 
-# 👥 Team
+## 🔌 Backend API Endpoints
 
-**JanDrishti Development Team**
+The Node.js and Express backend provides REST endpoints for civic issue management.
 
-> Building technology for more transparent and participatory civic management.
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/health` | Check backend health |
+| GET | `/api/issues` | Retrieve reported issues |
+| GET | `/api/issues/:id` | Retrieve a specific issue |
+| POST | `/api/issues` | Create a new issue |
+| PATCH | `/api/issues/:id/status` | Update issue status |
+| POST | `/api/issues/:id/upvote` | Toggle issue upvote |
+| POST | `/api/issues/:id/assign` | Assign an officer |
+| POST | `/api/issues/:id/repair-proof` | Submit repair evidence |
+| GET | `/api/activities` | Retrieve activity records |
+| GET | `/api/stats/summary` | Retrieve dashboard statistics |
+| POST | `/api/issues/check` | Check for possible duplicate issues |
+
+Example API request:
+
+```bash
+curl http://localhost:5000/api/issues
+```
+
+**Note:** The current Express backend stores issue records in memory. Changes are not guaranteed to survive a server restart.
 
 ---
 
-# 📄 License
+## 🔐 Authentication and Security
 
-This project is currently being developed as an academic/project initiative.
+JanDrishti integrates Supabase Authentication for account management.
+
+Authentication-related functionality includes:
+
+- User registration
+- Email/password login
+- Session handling
+- Logout
+- Authentication-aware navigation
+
+### Planned Security Improvements
+
+- Server-side JWT validation
+- Role-based access control for administrators
+- PostgreSQL Row Level Security
+- Secure evidence uploads
+- API input validation
+- Rate limiting
+- Audit logging
+
+These improvements are required before handling real civic complaints in a production environment.
 
 ---
 
-## ⭐ JanDrishti
+## 🎯 Project Objectives
+
+1. Provide a centralized platform for reporting civic issues.
+2. Improve visibility into local infrastructure problems.
+3. Enable geographical visualization of complaints.
+4. Support communication between citizens and administrators.
+5. Encourage transparency in issue resolution.
+6. Introduce citizen participation in resolution verification.
+7. Promote accountability and community engagement.
+
+---
+
+## 🌍 Sustainable Development Goal Alignment
+
+### SDG 11 — Sustainable Cities and Communities
+
+JanDrishti supports the objectives of UN Sustainable Development Goal 11 by promoting citizen participation in urban management.
+
+The project focuses on:
+
+- Improving awareness of public infrastructure issues.
+- Encouraging responsible community participation.
+- Making local issue information more accessible.
+- Supporting transparent resolution processes.
+- Promoting more inclusive and sustainable communities.
+
+---
+
+## 🔮 Future Enhancements
+
+- [ ] PostgreSQL database integration for persistent issue storage
+- [ ] Secure image uploads using Supabase Storage
+- [ ] Server-side admin authorization
+- [ ] Real-time issue status notifications
+- [ ] Advanced map-based filtering
+- [ ] Automated duplicate issue detection
+- [ ] Ward-wise civic analytics
+- [ ] Public issue resolution reports
+- [ ] Email notifications for status changes
+- [ ] Improved accessibility and mobile experience
+- [ ] Production deployment of the backend API
+
+---
+
+## 🤝 Contributing
+
+Contributions, suggestions, and improvements are welcome.
+
+To contribute:
+
+1. Fork the repository.
+2. Create a new feature branch.
+3. Make your changes.
+4. Commit your updates.
+5. Open a pull request.
+
+---
+
+## 📄 License
+
+A license has not yet been specified. Add a `LICENSE` file to define the terms for reuse and contribution.
+
+---
+
+<div align="center">
+
+### 🏙️ JanDrishti
 
 **Report. Resolve. Verify.**
 
-A civic issue is not truly resolved until the citizen can verify it.
+*Empowering citizens. Strengthening communities. Building accountability.*
+
+🌐 **[Visit Live Website](https://jandrishti-tan.vercel.app/)**
+
+**Built with React, Node.js, Express, Supabase and Leaflet**
+
+</div>
