@@ -63,6 +63,87 @@
   --jd-radius-full: 9999px;
 }
 
+/* =========================================================
+   GLOBAL DARK THEME TOKENS
+   Applied via [data-theme="dark"] on <html>
+   ========================================================= */
+:root[data-theme="dark"],
+[data-theme="dark"],
+.dark {
+  color-scheme: dark;
+
+  /* Primary Emerald & Forest Palette */
+  --jd-primary: #10b981;
+  --jd-primary-dark: #059669;
+  --jd-primary-deep: #047857;
+  --jd-primary-forest: #022c22;
+  --jd-primary-light: #132a20;
+  --jd-primary-glow: rgba(16, 185, 129, 0.35);
+  --jd-primary-glow-lg: 0 0 35px rgba(16, 185, 129, 0.45);
+
+  --jd-green: #10b981;
+  --jd-green-dark: #059669;
+  --jd-green-light: #142a1e;
+  --jd-green-soft: #0f2117;
+  --jd-emerald: #10b981;
+
+  /* Warm Gold / Amber Accent */
+  --jd-amber: #fbbf24;
+  --jd-amber-glow: rgba(251, 191, 36, 0.3);
+  --jd-amber-light: #2c200c;
+  --jd-amber-dark: #fcd34d;
+
+  /* Status Accents */
+  --jd-red: #f87171;
+  --jd-red-glow: rgba(248, 113, 113, 0.25);
+  --jd-red-light: #351414;
+  --jd-danger: #f87171;
+  --jd-purple: #c084fc;
+  --jd-purple-glow: rgba(192, 132, 252, 0.25);
+  --jd-purple-light: #24163b;
+  --jd-blue: #60a5fa;
+  --jd-blue-light: #14223b;
+
+  /* Neutral Spectrum */
+  --jd-bg: #090e0b;
+  --jd-surface: #121c16;
+  --jd-surface-glass: rgba(18, 28, 22, 0.85);
+  --jd-surface-muted: #17241d;
+  --jd-card: #141e18;
+  --jd-card-soft: #192720;
+  --jd-card-bg: #141e18;
+  --jd-border: #233429;
+  --jd-border-subtle: #1c2b21;
+  --jd-border-strong: rgba(16, 185, 129, 0.35);
+  --jd-border-hover: #3b5c49;
+
+  --jd-text: #f0fdf4;
+  --jd-text-light: #a4b9ad;
+  --jd-text-muted: #85988e;
+  --jd-text-subtle: #6e8477;
+  --jd-muted: #72877b;
+
+  --jd-nav-bg: rgba(9, 14, 11, 0.9);
+  --jd-footer-bg: #050806;
+
+  /* Elevation Shadows */
+  --jd-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --jd-shadow-md: 0 8px 24px -4px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3);
+  --jd-shadow-lg: 0 20px 48px -12px rgba(0, 0, 0, 0.7), 0 4px 16px rgba(0, 0, 0, 0.4);
+  --jd-shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4), 0 12px 30px -8px rgba(0, 0, 0, 0.6);
+}
+
+select option {
+  background-color: var(--jd-surface);
+  color: var(--jd-text);
+}
+
+[data-theme="dark"] select option,
+.dark select option {
+  background-color: #141e18;
+  color: #eef5f0;
+}
+
 html {
   font-family: var(--font-main);
   background-color: var(--jd-bg);

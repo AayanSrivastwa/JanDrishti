@@ -24,6 +24,8 @@ import {
   submitMunicipalRepairProof,
 } from "../Services/issueService";
 import AnimatedBackground from "../components/AnimatedBackground";
+import CommentSection from "../components/CommentSection";
+import SLACountdown from "../components/SLACountdown";
 import "../styles/admin.css";
 import { useTheme } from "../context/ThemeContext";
 
@@ -145,10 +147,8 @@ export default function AdminPortal() {
         <div className="admin-container nav-inner">
           <div className="admin-brand-group">
             <Link to="/" className="admin-brand">
-              <span className="brand-badge-admin">MUNICIPAL COMMAND</span>
               <div className="brand-title">
                 <h2>JanDrishti Ops</h2>
-                <span>Delhi Municipal Authority Console</span>
               </div>
             </Link>
           </div>
@@ -361,6 +361,7 @@ export default function AdminPortal() {
                   <span className="tag-pill">
                     ⏱️ Target SLA: {selectedIssue.slaHours || 24} Hours
                   </span>
+                  <SLACountdown issue={selectedIssue} />
                 </div>
               </div>
 
@@ -490,6 +491,16 @@ export default function AdminPortal() {
                     </div>
                   ))}
                 </div>
+              </div>
+
+              {/* Official Comments & Notes */}
+              <div className="admin-comments-section">
+                <h3>Official Comments & Notes</h3>
+                <CommentSection
+                  issueId={selectedIssue.id}
+                  currentUser={{ user_metadata: { name: "Municipal Officer" }, name: "Municipal Officer" }}
+                  currentUserRole="admin"
+                />
               </div>
             </section>
           ) : (

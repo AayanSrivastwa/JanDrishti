@@ -340,16 +340,7 @@ export default function LandingPage() {
                   FAQ
                 </a>
               </li>
-              <li>
-                <Link
-                  to="/admin"
-                  className="landing-nav-link"
-                  style={{ color: "var(--jd-emerald)", fontWeight: 700 }}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Municipal Portal
-                </Link>
-              </li>
+
             </ul>
 
             {/* Actions */}

@@ -40,9 +40,15 @@ import {
   toggleIssueUpvote,
   resetToDefaults,
   getActivities,
+  findPotentialDuplicates,
 } from "../Services/issueService";
 import AnimatedBackground from "../components/AnimatedBackground";
 import CivicMap from "../components/CivicMap";
+import CommentSection from "../components/CommentSection";
+import SLACountdown from "../components/SLACountdown";
+import DuplicateWarning from "../components/DuplicateWarning";
+import PhotoComparisonSlider from "../components/PhotoComparisonSlider";
+import ShareIssue from "../components/ShareIssue";
 import "../styles/dashboard.css";
 
 // Register Chart.js components
@@ -102,6 +108,10 @@ export default function Dashboard() {
   const [disputeIssueTarget, setDisputeIssueTarget] = useState(null);
   const [disputeReason, setDisputeReason] = useState("");
 
+  // Duplicate check state for new report
+  const [dupCheckResult, setDupCheckResult] = useState(null);
+  const [dupChecking, setDupChecking] = useState(false);
+
   // Verification Feedback Notice
   const [bannerNotice, setBannerNotice] = useState("");
 
@@ -109,7 +119,7 @@ export default function Dashboard() {
   const [userLocation, setUserLocation] = useState(null);
 
   // Live Activity Feed derived from storage whenever issues changes
-  const activities = useMemo(() => getActivities(), [issues]);
+  const activities = useMemo(() => (issues ? getActivities() : []), [issues]);
 
   function handleLocateMe() {
     if (navigator.geolocation) {
@@ -232,6 +242,23 @@ export default function Dashboard() {
 
     setBannerNotice(`✅ New civic issue #${created.id} submitted & routed to ${created.ward}!`);
     setTimeout(() => setBannerNotice(""), 6000);
+  }
+
+  // Check for duplicate issues when user enters location
+  function handleCheckDuplicate() {
+    if (!newTitle.trim() || !gpsCoordinates.lat) return;
+    setDupChecking(true);
+    const result = findPotentialDuplicates({
+      category: newCategory,
+      latitude: gpsCoordinates.lat,
+      longitude: gpsCoordinates.lng,
+      title: newTitle,
+      description: newDesc,
+      ward: newWard,
+      radiusKm: 1,
+    });
+    setDupCheckResult(result);
+    setDupChecking(false);
   }
 
   // Export CSV Data
@@ -429,73 +456,156 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <main className="jan-container" style={{ paddingBottom: "60px" }}>
-        {/* EXECUTIVE HEADER */}
-        <section className="dashboard-header-area">
-          <div className="header-welcome">
-            <div className="header-pill">
-              <Activity size={13} color="var(--jd-emerald)" />
-              <span>OPERATIONAL STATUS: NOMINAL • DELHI CENTRAL</span>
+      <main className={`jan-container ${viewMode === "map" ? "map-mode-container" : ""}`} style={{ paddingBottom: viewMode === "map" ? "20px" : "60px" }}>
+        {/* EXECUTIVE HEADER / MAP EXPLORER TOOLBAR */}
+        {viewMode === "map" ? (
+          <section className="map-explorer-bar">
+            <div className="map-explorer-header-left">
+              <div className="map-explorer-badge">
+                <MapIcon size={14} color="var(--jd-emerald)" />
+                <span>DELHI NCR WIDE GEOSPATIAL EXPLORER</span>
+              </div>
+              <h1>Civic Map Explorer 🗺️</h1>
+              <p>
+                Showing <strong>{filteredIssues.length}</strong> of {issues.length} active civic reports across Delhi NCT & NCR
+              </p>
             </div>
-            <h1>Command Center Dashboard 🏙️</h1>
-            <p>
-              Inspect, track, upvote, and physically verify municipal infrastructure repairs in real time.
-            </p>
-          </div>
 
-          <div className="header-actions-group">
-            <button
-              type="button"
-              className="btn-secondary-tool"
-              onClick={handleExportData}
-              title="Export all civic reports as CSV"
-            >
-              <Download size={14} />
-              <span>Export CSV</span>
-            </button>
+            <div className="map-explorer-header-right">
+              {/* Live Search on Map */}
+              <div className="map-search-inline">
+                <Search size={14} />
+                <input
+                  type="text"
+                  placeholder="Filter by ward, issue title, or #JD ID..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                {searchQuery && (
+                  <button type="button" className="btn-search-clear" onClick={() => setSearchQuery("")}>
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
 
-            <button
-              type="button"
-              className="btn-secondary-tool"
-              onClick={handleResetPrototype}
-              title="Reset mock data to initial state"
-            >
-              <RotateCcw size={14} />
-              <span>Reset Data</span>
-            </button>
+              {/* Status quick tabs */}
+              <div className="map-filter-pills">
+                {[
+                  { id: "all", label: `All (${totalCount})` },
+                  { id: "verification", label: `Verify (${verificationCount})`, cls: "purple" },
+                  { id: "progress", label: `In Progress (${inProgressCount})`, cls: "amber" },
+                  { id: "resolved", label: `Verified (${resolvedCount})`, cls: "green" },
+                ].map((st) => (
+                  <button
+                    key={st.id}
+                    type="button"
+                    className={`map-quick-tab ${st.cls || ""} ${statusFilter === st.id ? "active" : ""}`}
+                    onClick={() => setStatusFilter(st.id)}
+                  >
+                    {st.label}
+                  </button>
+                ))}
+              </div>
 
-            {/* View Mode Switcher */}
-            <div className="view-mode-pills">
-              <button
-                type="button"
-                className={`view-mode-btn ${viewMode === "split" ? "active" : ""}`}
-                onClick={() => setViewMode("split")}
-                title="Split Feed + Map"
-              >
-                <Layers size={13} />
-                <span>Split View</span>
-              </button>
-              <button
-                type="button"
-                className={`view-mode-btn ${viewMode === "map" ? "active" : ""}`}
-                onClick={() => setViewMode("map")}
-                title="Full Interactive Map"
-              >
-                <MapIcon size={13} />
-                <span>Map Only</span>
-              </button>
-              <button
-                type="button"
-                className={`view-mode-btn ${viewMode === "feed" ? "active" : ""}`}
-                onClick={() => setViewMode("feed")}
-                title="Full Issue Stream"
-              >
-                <ListFilter size={13} />
-                <span>Feed Only</span>
-              </button>
+              {/* View Mode Switcher */}
+              <div className="view-mode-pills">
+                <button
+                  type="button"
+                  className={`view-mode-btn ${viewMode === "split" ? "active" : ""}`}
+                  onClick={() => setViewMode("split")}
+                  title="Split Feed + Map"
+                >
+                  <Layers size={13} />
+                  <span>Split View</span>
+                </button>
+                <button
+                  type="button"
+                  className={`view-mode-btn ${viewMode === "map" ? "active" : ""}`}
+                  onClick={() => setViewMode("map")}
+                  title="Full Interactive Map"
+                >
+                  <MapIcon size={13} />
+                  <span>Map Only</span>
+                </button>
+                <button
+                  type="button"
+                  className={`view-mode-btn ${viewMode === "feed" ? "active" : ""}`}
+                  onClick={() => setViewMode("feed")}
+                  title="Full Issue Stream"
+                >
+                  <ListFilter size={13} />
+                  <span>Feed Only</span>
+                </button>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        ) : (
+          <section className="dashboard-header-area">
+            <div className="header-welcome">
+              <div className="header-pill">
+                <Activity size={13} color="var(--jd-emerald)" />
+                <span>OPERATIONAL STATUS: NOMINAL • DELHI CENTRAL</span>
+              </div>
+              <h1>Command Center Dashboard 🏙️</h1>
+              <p>
+                Inspect, track, upvote, and physically verify municipal infrastructure repairs in real time.
+              </p>
+            </div>
+
+            <div className="header-actions-group">
+              <button
+                type="button"
+                className="btn-secondary-tool"
+                onClick={handleExportData}
+                title="Export all civic reports as CSV"
+              >
+                <Download size={14} />
+                <span>Export CSV</span>
+              </button>
+
+              <button
+                type="button"
+                className="btn-secondary-tool"
+                onClick={handleResetPrototype}
+                title="Reset mock data to initial state"
+              >
+                <RotateCcw size={14} />
+                <span>Reset Data</span>
+              </button>
+
+              {/* View Mode Switcher */}
+              <div className="view-mode-pills">
+                <button
+                  type="button"
+                  className={`view-mode-btn ${viewMode === "split" ? "active" : ""}`}
+                  onClick={() => setViewMode("split")}
+                  title="Split Feed + Map"
+                >
+                  <Layers size={13} />
+                  <span>Split View</span>
+                </button>
+                <button
+                  type="button"
+                  className={`view-mode-btn ${viewMode === "map" ? "active" : ""}`}
+                  onClick={() => setViewMode("map")}
+                  title="Full Interactive Map"
+                >
+                  <MapIcon size={13} />
+                  <span>Map Only</span>
+                </button>
+                <button
+                  type="button"
+                  className={`view-mode-btn ${viewMode === "feed" ? "active" : ""}`}
+                  onClick={() => setViewMode("feed")}
+                  title="Full Issue Stream"
+                >
+                  <ListFilter size={13} />
+                  <span>Feed Only</span>
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* FEEDBACK NOTICE */}
         {bannerNotice && (
@@ -505,8 +615,8 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* CITIZEN VERIFICATION SPOTLIGHT */}
-        {pendingVerificationIssue && (
+        {/* CITIZEN VERIFICATION SPOTLIGHT (Only in Split or Feed Mode) */}
+        {viewMode !== "map" && pendingVerificationIssue && (
           <div className="verification-spotlight">
             <div className="spotlight-left">
               <div className="spotlight-icon-box">
@@ -554,67 +664,69 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* KPI METRICS RIBBON */}
-        <section className="dashboard-kpi-ribbon">
-          <div
-            className={`kpi-card ${statusFilter === "all" ? "active-kpi" : ""}`}
-            onClick={() => setStatusFilter("all")}
-          >
-            <div className="kpi-icon-bubble">
-              <FileText size={22} />
+        {/* KPI METRICS RIBBON (Only in Split or Feed Mode) */}
+        {viewMode !== "map" && (
+          <section className="dashboard-kpi-ribbon">
+            <div
+              className={`kpi-card ${statusFilter === "all" ? "active-kpi" : ""}`}
+              onClick={() => setStatusFilter("all")}
+            >
+              <div className="kpi-icon-bubble">
+                <FileText size={22} />
+              </div>
+              <div className="kpi-info-wrap">
+                <span className="kpi-number">{totalCount}</span>
+                <span className="kpi-label">Total Reported</span>
+              </div>
             </div>
-            <div className="kpi-info-wrap">
-              <span className="kpi-number">{totalCount}</span>
-              <span className="kpi-label">Total Reported</span>
-            </div>
-          </div>
 
-          <div
-            className={`kpi-card ${statusFilter === "progress" ? "active-kpi" : ""}`}
-            onClick={() => setStatusFilter("progress")}
-          >
-            <div className="kpi-icon-bubble amber">
-              <Clock3 size={22} />
+            <div
+              className={`kpi-card ${statusFilter === "progress" ? "active-kpi" : ""}`}
+              onClick={() => setStatusFilter("progress")}
+            >
+              <div className="kpi-icon-bubble amber">
+                <Clock3 size={22} />
+              </div>
+              <div className="kpi-info-wrap">
+                <span className="kpi-number">{inProgressCount}</span>
+                <span className="kpi-label">Active Repairs</span>
+              </div>
             </div>
-            <div className="kpi-info-wrap">
-              <span className="kpi-number">{inProgressCount}</span>
-              <span className="kpi-label">Active Repairs</span>
-            </div>
-          </div>
 
-          <div
-            className={`kpi-card ${statusFilter === "verification" ? "active-kpi" : ""}`}
-            onClick={() => setStatusFilter("verification")}
-          >
-            <div className="kpi-icon-bubble purple">
-              <ShieldCheck size={22} />
+            <div
+              className={`kpi-card ${statusFilter === "verification" ? "active-kpi" : ""}`}
+              onClick={() => setStatusFilter("verification")}
+            >
+              <div className="kpi-icon-bubble purple">
+                <ShieldCheck size={22} />
+              </div>
+              <div className="kpi-info-wrap">
+                <span className="kpi-number" style={{ color: "var(--jd-purple)" }}>
+                  {verificationCount}
+                </span>
+                <span className="kpi-label">Needs Verification</span>
+              </div>
+              {verificationCount > 0 && (
+                <span className="kpi-badge-pulse">ACTION REQ.</span>
+              )}
             </div>
-            <div className="kpi-info-wrap">
-              <span className="kpi-number" style={{ color: "var(--jd-purple)" }}>
-                {verificationCount}
-              </span>
-              <span className="kpi-label">Needs Verification</span>
-            </div>
-            {verificationCount > 0 && (
-              <span className="kpi-badge-pulse">ACTION REQ.</span>
-            )}
-          </div>
 
-          <div
-            className={`kpi-card ${statusFilter === "resolved" ? "active-kpi" : ""}`}
-            onClick={() => setStatusFilter("resolved")}
-          >
-            <div className="kpi-icon-bubble green">
-              <CheckCircle2 size={22} />
+            <div
+              className={`kpi-card ${statusFilter === "resolved" ? "active-kpi" : ""}`}
+              onClick={() => setStatusFilter("resolved")}
+            >
+              <div className="kpi-icon-bubble green">
+                <CheckCircle2 size={22} />
+              </div>
+              <div className="kpi-info-wrap">
+                <span className="kpi-number" style={{ color: "var(--jd-emerald)" }}>
+                  {resolvedCount}
+                </span>
+                <span className="kpi-label">Verified Resolved</span>
+              </div>
             </div>
-            <div className="kpi-info-wrap">
-              <span className="kpi-number" style={{ color: "var(--jd-emerald)" }}>
-                {resolvedCount}
-              </span>
-              <span className="kpi-label">Verified Resolved</span>
-            </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* COMMAND CENTER SPLIT SCREEN */}
         <section className={`command-center mode-${viewMode}`}>
@@ -828,6 +940,7 @@ export default function Dashboard() {
               darkMode={darkMode}
               userLocation={userLocation}
               onLocateMe={handleLocateMe}
+              viewMode={viewMode}
             />
 
             {/* Selected Issue Inspection Overlay Tray */}
@@ -838,9 +951,19 @@ export default function Dashboard() {
                     <span className="drawer-id">{selectedIssue.id}</span>
                     <h3>{selectedIssue.title}</h3>
                   </div>
-                  <span className={`badge-status ${selectedIssue.status}`}>
-                    {selectedIssue.status}
-                  </span>
+                  <div className="drawer-header-actions">
+                    <span className={`badge-status ${selectedIssue.status}`}>
+                      {selectedIssue.status}
+                    </span>
+                    <button
+                      type="button"
+                      className="btn-drawer-close"
+                      onClick={() => setSelectedIssue(null)}
+                      title="Close inspection drawer"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
                 </div>
 
                 <div className="inspect-drawer-body">
@@ -862,6 +985,10 @@ export default function Dashboard() {
                     <div>
                       <span>Community Upvotes</span>
                       <strong>{selectedIssue.upvotes || 0} Citizens</strong>
+                    </div>
+                    <div>
+                      <span>SLA Deadline</span>
+                      <SLACountdown issue={selectedIssue} />
                     </div>
                   </div>
 
@@ -885,6 +1012,33 @@ export default function Dashboard() {
                       </div>
                     </div>
                   )}
+                </div>
+
+                {/* Photo Comparison Slider */}
+                {(selectedIssue.evidenceBefore || selectedIssue.evidenceAfter) && (
+                  <div className="drawer-evidence-compare">
+                    <h4>Repair Evidence Comparison</h4>
+                    <PhotoComparisonSlider
+                      beforeImage={selectedIssue.evidenceBefore || undefined}
+                      afterImage={selectedIssue.evidenceAfter || undefined}
+                    />
+                  </div>
+                )}
+
+                {/* Community Comments */}
+                <div className="drawer-comments-section">
+                  <h4>Community Discussion</h4>
+                  <CommentSection
+                    issueId={selectedIssue.id}
+                    currentUser={{ user_metadata: { name: userName }, name: userName }}
+                    currentUserRole="citizen"
+                  />
+                </div>
+
+                {/* Share Issue */}
+                <div className="drawer-share-section">
+                  <h4>Share This Report</h4>
+                  <ShareIssue issue={selectedIssue} />
                 </div>
               </div>
             )}
@@ -1064,6 +1218,14 @@ export default function Dashboard() {
                     </span>
                   )}
                 </div>
+                <button
+                  type="button"
+                  className="btn-check-duplicate"
+                  onClick={handleCheckDuplicate}
+                  disabled={dupChecking || !newTitle.trim()}
+                >
+                  {dupChecking ? "Scanning…" : (<> <AlertTriangle size={13} /> Check for Similar Issues</>)}
+                </button>
               </div>
 
               <div className="modal-field">
@@ -1101,6 +1263,16 @@ export default function Dashboard() {
                 />
               </div>
 
+              {dupCheckResult && (
+                <DuplicateWarning
+                  category={newCategory}
+                  latitude={gpsCoordinates.lat}
+                  longitude={gpsCoordinates.lng}
+                  title={newTitle}
+                  description={newDesc}
+                  ward={newWard}
+                />
+              )}
               <div className="modal-actions">
                 <button
                   type="button"
@@ -1113,6 +1285,7 @@ export default function Dashboard() {
                   <Plus size={16} />
                   <span>Submit Civic Report</span>
                 </button>
+                {dupChecking && <span className="modal-dup-checking">Scanning for similar issues…</span>}
               </div>
             </form>
           </div>

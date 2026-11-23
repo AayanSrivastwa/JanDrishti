@@ -4,7 +4,7 @@ import { issues, activities } from "../data/initialIssues.js";
 const router = express.Router();
 
 // GET all issues (supports ?category=&status=&ward=&search=)
-router.get("/", (req, { ...res }) => {
+router.get("/", (req, res) => {
   const { category, status, ward, search } = req.query;
   let result = [...issues];
 
@@ -45,13 +45,13 @@ router.get("/:id", (req, res) => {
 
 // POST create issue
 router.post("/", (req, res) => {
-  const { title, category, ward, description, priority, latitude, longitude, photoUrl, reportedBy } = req.body;
+  const { id, title, category, ward, description, priority, latitude, longitude, photoUrl, reportedBy, timeline } = req.body;
 
   if (!title || !title.trim()) {
     return res.status(400).json({ success: false, message: "Title is required" });
   }
 
-  const newId = `JD-2026-${String(issues.length + 1).padStart(2, "0")}`;
+  const newId = id || `JD-2026-${String(issues.length + 1).padStart(2, "0")}`;
   const newIssue = {
     id: newId,
     title: title.trim(),
